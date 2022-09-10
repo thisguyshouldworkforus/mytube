@@ -127,3 +127,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# User file ignore
+.gitignore
+pending_downloads.txt
+.config/.apikey
+.config/channels-to-grab.txt
+.config/playlists-to-grab.txt
+.config/youtube_auth.json
+.config/youtube.com_cookies.txt
