@@ -111,7 +111,12 @@ class History():
                 if (reason is None):
                     logger.error("reason is required, when action is 'discard'!")
                     raise ValueError("reason is required!")
-                reason_pattern = re.compile(r"age|views|lenth")
+                reason_pattern = re.compile(r"age|views|lenth|quantity|keywords|title|history")
+                if reason_pattern.match(reason):
+                    logger.info(f"Reason: \"{reason}\" is valid!")
+                else:
+                    logger.error(f"Reason: \"{reason}\" is INVALID!")
+                    raise ValueError("Invalid reason!")
                 if reason_pattern.match(reason):
                     logger.info(f"Reason: \"{reason}\" is valid!")
                 else:
@@ -144,7 +149,7 @@ class History():
                     "views": yt.views,
                     "title": yt.title,
                     "length": (yt.length // 60),
-                    "age": yt.publish_date.strftime("%Y-%m-%d %H:%M:%S")
+                    "age": (yt.publish_date.strftime("%Y-%m-%d %H:%M:%S"))
                 }
             }
 
@@ -152,6 +157,6 @@ class History():
         with open(f"{os.path.dirname(__file__)}/.archive/MyTubeHistory.json",'r+') as mytube_history:
             data = json.load(mytube_history)
             data.update(mytube_update)
-            mytube_history.seek(0)
+            mytube_history.seek(2)
             json.dump(data, mytube_history, indent=2)
         mytube_history.close()
