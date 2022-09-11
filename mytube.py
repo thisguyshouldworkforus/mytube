@@ -7,7 +7,13 @@ import logging
 import datetime
 from pytube import Channel, Playlist, YouTube
 from pytube.exceptions import RegexMatchError
-from lib.History import History
+from lib.history import history
+
+# Delete a previous log file
+try:
+    os.remove(f'{os.path.dirname(__file__)}/Logs/mytube.log')
+except FileNotFoundError:
+    pass
 
 # Format Numbers
 def pretty(num):
@@ -80,11 +86,11 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                 c = Channel(URL)
                 CHANNEL_NAME = str(c.channel_name)
                 print(f"\n--------------------------------\n>> Working on Channel: \"{CHANNEL_NAME}\"\nVideo Count:", end="")
-                print(f" {pretty(len(c.video_urls))})", end="\n--------------------------------\n")
+                print(f" {pretty(len(c.video_urls))}", end="\n--------------------------------\n")
                 logger.info(f"Working on Channel: {CHANNEL_NAME}")
                 for VIDEO in c.video_urls:
                     yt = YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
-                    if not History.read(str(yt.video_id)):
+                    if not history.read(str(yt.video_id)):
                         LENGTH = int(yt.length // 60)
                         VIEWS = int(yt.views)
                         TITLE = str(yt.title)
@@ -97,17 +103,17 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                                 if LENGTH <= 120:
                                     DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
                                     worksheet.write_row(ROW, 0, DATA)
-                                    History.write(ID, action="download")
+                                    history.write(ID, action="download")
                                     logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")
                                     ROW += 1
                                     RESULTS_ARRAY.append(VIDEO)
                                     continue
                                 else:
-                                    History.write(ID, action="discard", reason="length")
+                                    history.write(ID, action="discard", reason="length")
                                     logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too long")
                                     continue
                             else:
-                                History.write(ID, action="discard", reason="length")
+                                history.write(ID, action="discard", reason="length")
                                 logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too short")
                                 
                         # Channels I like, but care a tiny bit about views
@@ -117,21 +123,21 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                                     if VIEWS >= 250000:
                                         DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
                                         worksheet.write_row(ROW, 0, DATA)
-                                        History.write(ID, action="download")
+                                        history.write(ID, action="download")
                                         logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")
                                         ROW += 1
                                         RESULTS_ARRAY.append(VIDEO)
                                         continue
                                     else:
-                                        History.write(ID, action="discard", reason="views")
+                                        history.write(ID, action="discard", reason="views")
                                         logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it didn't have enough views")
                                         continue
                                 else:
-                                    History.write(ID, action="discard", reason="length")
+                                    history.write(ID, action="discard", reason="length")
                                     logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too long")
                                     continue
                             else:
-                                History.write(ID, action="discard", reason="length")
+                                history.write(ID, action="discard", reason="length")
                                 logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too short")
 
                         # Nieche Tech Channels with low viewership
@@ -141,21 +147,21 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                                     if VIEWS >= 10000:
                                         DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
                                         worksheet.write_row(ROW, 0, DATA)
-                                        History.write(ID, action="download")
+                                        history.write(ID, action="download")
                                         logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")
                                         ROW += 1
                                         RESULTS_ARRAY.append(VIDEO)
                                         continue
                                     else:
-                                        History.write(ID, action="discard", reason="views")
+                                        history.write(ID, action="discard", reason="views")
                                         logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it didn't have enough views")
                                         continue
                                 else:
-                                    History.write(ID, action="discard", reason="length")
+                                    history.write(ID, action="discard", reason="length")
                                     logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too long")
                                     continue
                             else:
-                                History.write(ID, action="discard", reason="length")
+                                history.write(ID, action="discard", reason="length")
                                 logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too short")
                                 continue
 
@@ -166,21 +172,21 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                                     if VIEWS >= 10000000:
                                         DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
                                         worksheet.write_row(ROW, 0, DATA)
-                                        History.write(ID, action="download")
+                                        history.write(ID, action="download")
                                         logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")                
                                         ROW += 1
                                         RESULTS_ARRAY.append(VIDEO)
                                         continue
                                     else:
-                                        History.write(ID, action="discard", reason="views")
+                                        history.write(ID, action="discard", reason="views")
                                         logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it didn't have enough views")
                                         continue
                                 else:
-                                    History.write(ID, action="discard", reason="length")
+                                    history.write(ID, action="discard", reason="length")
                                     logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too long")
                                     continue
                             else:
-                                History.write(ID, action="discard", reason="length")
+                                history.write(ID, action="discard", reason="length")
                                 logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too short")
                                 continue
                                     
@@ -191,21 +197,21 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                                     if VIEWS >= 30000000:
                                         DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
                                         worksheet.write_row(ROW, 0, DATA)
-                                        History.write(ID, action="download")
+                                        history.write(ID, action="download")
                                         logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")                
                                         ROW += 1
                                         RESULTS_ARRAY.append(VIDEO)
                                         continue
                                     else:
-                                        History.write(ID, action="discard", reason="views")
+                                        history.write(ID, action="discard", reason="views")
                                         logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it didn't have enough views")
                                         continue
                                 else:
-                                    History.write(ID, action="discard", reason="length")
+                                    history.write(ID, action="discard", reason="length")
                                     logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too long")
                                     continue
                             else:
-                                History.write(ID, action="discard", reason="length")
+                                history.write(ID, action="discard", reason="length")
                                 logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too short")
                                 continue
                                     
@@ -219,7 +225,7 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                                         if (NEWS <= 12):
                                             DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
                                             worksheet.write_row(ROW, 0, DATA)
-                                            History.write(ID, action="download")
+                                            history.write(ID, action="download")
                                             logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")
                                             ROW += 1
                                             # The 'NEWS' variable is used to ensure that we only capture 12 videos
@@ -227,19 +233,19 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                                             RESULTS_ARRAY.append(VIDEO)
                                             continue
                                         else:
-                                            History.write(ID, action="discard", reason="quantity")
+                                            history.write(ID, action="discard", reason="quantity")
                                             logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because we already have 12 videos from this channel")
                                             continue
                                     else:
-                                        History.write(ID, action="discard", reason="age")
+                                        history.write(ID, action="discard", reason="age")
                                         logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too old")
                                         continue
                                 else:
-                                    History.write(ID, action="discard", reason="keywords")
+                                    history.write(ID, action="discard", reason="keywords")
                                     logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it didn't contain the desired keywords")
                                     continue
                             else:
-                                History.write(ID, action="discard", reason="length")
+                                history.write(ID, action="discard", reason="length")
                                 logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too short")
                                 continue
 
@@ -253,7 +259,7 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                                         if (MADDOW <= 12):
                                             DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
                                             worksheet.write_row(ROW, 0, DATA)
-                                            History.write(ID, action="download")
+                                            history.write(ID, action="download")
                                             logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")
                                             ROW += 1
                                             # The 'MADDOW' variable is used to ensure that we only capture 12 videos
@@ -261,19 +267,19 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                                             RESULTS_ARRAY.append(VIDEO)
                                             continue
                                         else:
-                                            History.write(ID, action="discard", reason="quantity")
+                                            history.write(ID, action="discard", reason="quantity")
                                             logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because we already have 12 videos from this channel")
                                             continue
                                     else:
-                                        History.write(ID, action="discard", reason="age")
+                                        history.write(ID, action="discard", reason="age")
                                         logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too old")
                                         continue
                                 else:
-                                    History.write(ID, action="discard", reason="keywords")
+                                    history.write(ID, action="discard", reason="keywords")
                                     logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it didn't contain the desired title")
                                     continue
                             else:
-                                History.write(ID, action="discard", reason="length")
+                                history.write(ID, action="discard", reason="length")
                                 logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too short")
                                 continue
 
@@ -284,21 +290,21 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                                     if VIEWS >= 2500000:
                                         DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
                                         worksheet.write_row(ROW, 0, DATA)
-                                        History.write(ID, action="download")
+                                        history.write(ID, action="download")
                                         logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")                
                                         ROW += 1
                                         RESULTS_ARRAY.append(VIDEO)
                                         continue
                                     else:
-                                        History.write(ID, action="discard", reason="views")
+                                        history.write(ID, action="discard", reason="views")
                                         logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it didn't have enough views")
                                         continue
                                 else:
-                                    History.write(ID, action="discard", reason="length")
+                                    history.write(ID, action="discard", reason="length")
                                     logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too long")
                                     continue
                             else:
-                                History.write(ID, action="discard", reason="length")
+                                history.write(ID, action="discard", reason="length")
                                 logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it was too short")
                                 continue
 
@@ -306,17 +312,17 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                         elif VIEWS >= 35000000:
                             DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
                             worksheet.write_row(ROW, 0, DATA)
-                            History.write(ID, action="download")
+                            history.write(ID, action="download")
                             logger.info((f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet, because it has too many views to ignore ({pretty(VIEWS)})!"))
                             ROW += 1
                             RESULTS_ARRAY.append(VIDEO)
                             continue
                         else:
-                            History.write(ID, action="discard", reason="other")
+                            history.write(ID, action="discard", reason="other")
                             logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because it didn't meet any of the other criteria")
                             continue
                     else:
-                        History.write(ID, action="discard", reason="history")
+                        history.write(ID, action="discard", reason="history")
                         logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because we already have it")
                         continue
 
@@ -363,26 +369,26 @@ with open(f'{os.path.dirname(__file__)}/.config/playlists-to-grab.txt') as f:
                     VIEWS = int(yt.views)
                     TITLE = str(yt.title)
                     ID = str(yt.video_id)
-                    if not History.read(ID):
+                    if not history.read(ID):
                         if LENGTH >= 2:
                             if LENGTH <= 120:
                                 DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
                                 worksheet.write_row(ROW, 0, DATA)
-                                History.write(ID, action="download")
+                                history.write(ID, action="download", playlist_id=PLAYLIST_ID)
                                 logger.info(f"Added Playlist: (( '{CHANNEL_NAME}', '{PLAYLIST_NAME}' )) << \"{TITLE}\" >> to the spreadsheet")                
                                 ROW += 1
                                 RESULTS_ARRAY.append(VIDEO)
                                 continue
                             else:
-                                History.write(ID, action="discard", reason="length")
+                                history.write(ID, action="discard", reason="length", playlist_id=PLAYLIST_ID)
                                 logger.info(f"Discarded Playlist: (( '{CHANNEL_NAME}', '{PLAYLIST_NAME}' )) << \"{TITLE}\" >> because it was too long")
                                 continue
                         else:
-                            History.write(ID, action="discard", reason="length")
+                            history.write(ID, action="discard", reason="length", playlist_id=PLAYLIST_ID)
                             logger.info(f"Discarded Playlist: (( '{CHANNEL_NAME}', '{PLAYLIST_NAME}' )) << \"{TITLE}\" >> because it was too short")
                             continue
                     else:
-                        History.write(ID, action="discard", reason="history")
+                        history.write(ID, action="discard", reason="history", playlist_id=PLAYLIST_ID)
                         logger.info(f"Discarded Playlist: (( '{CHANNEL_NAME}', '{PLAYLIST_NAME}' )) << \"{TITLE}\" >> because we already have it")
                         continue
 

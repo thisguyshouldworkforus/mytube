@@ -15,17 +15,23 @@ import json
 import re
 from pytube import Channel, Playlist, YouTube
 from pytube.exceptions import RegexMatchError
+from json.decoder import JSONDecodeError
 
+# Delete a previous log file
+try:
+    os.remove(f'{os.path.dirname(__file__)}/../Logs/history_class.log')
+except FileNotFoundError:
+    pass
 
 # Create an info log file
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s:%(levelname)s' + '\n' + '%(message)s' + '\n')
-file_handler = logging.FileHandler(f'{os.path.dirname(__file__)}/Logs/mytube.log', mode='a', encoding='utf-8')
+file_handler = logging.FileHandler(f'{os.path.dirname(__file__)}/../Logs/history_class.log', mode='a', encoding='utf-8')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
-class History():
+class history():
 
     # Define the date, availale for the entire class
     TODAY = (datetime.datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
@@ -52,11 +58,15 @@ class History():
     """
 
     def read(video_id):
-        
-        # Read the history file
-        with open(f"{os.path.dirname(__file__)}/.archive/MyTubeHistory.json",'r+') as history_file:
-            mytube_history = json.load(history_file)
-        history_file.close()
+        try:
+            if os.path.isfile(f"{os.path.dirname(__file__)}/../.archive/MyTubeHistory.json"):
+                with open(f"{os.path.dirname(__file__)}/../.archive/MyTubeHistory.json", 'r') as f:
+                    mytube_history = json.load(f)
+                f.close()
+            else:
+                mytube_history = {}
+        except (JSONDecodeError, FileNotFoundError):
+            pass
 
         # Regex Patterns
         id_pattern = re.compile(r"[A-Za-z0-9\_\-]{11,64}")
@@ -75,7 +85,7 @@ class History():
             logger.error("Invalid video ID!")
             raise ValueError("Invalid video ID!")
 
-    def write(video_id, action=None, reason=None):
+    def write(video_id, action=None, reason=None, **kwargs):
         
         if (video_id is None):
             logger.error("video_id is required!")
@@ -85,12 +95,10 @@ class History():
         id_pattern = re.compile(r"[A-Za-z0-9\_\-]{11,64}")
 
         if id_pattern.match(video_id):
-            logger.info(f"Video ID \"{video_id}\" is valid!")
-            yt = YouTube(video_id)
-            ytc = YouTube(video_id).channel_url
-            ytp = YouTube(video_id).playlist_url
-            c = Channel(ytc)
-            p = Playlist(ytp)
+            logger.info(f"Video ID \"{video_id}\" is valid!")            
+            URL = f"https://www.youtube.com/watch?v={video_id}"
+            yt = YouTube(URL)
+            c = Channel(YouTube(URL).channel_url)
 
         else:
             logger.error(f"Video ID \"{video_id}\" is INVALID!")
@@ -111,7 +119,7 @@ class History():
                 if (reason is None):
                     logger.error("reason is required, when action is 'discard'!")
                     raise ValueError("reason is required!")
-                reason_pattern = re.compile(r"age|views|lenth|quantity|keywords|title|history")
+                reason_pattern = re.compile(r"age|views|length|quantity|keywords|title|history|other")
                 if reason_pattern.match(reason):
                     logger.info(f"Reason: \"{reason}\" is valid!")
                 else:
@@ -122,41 +130,50 @@ class History():
                 else:
                     logger.error(f"Reason: \"{reason}\" is INVALID!")
                     raise ValueError("Invalid reason!")
-
-        if ((video_id and action) != None):
-            if p.playlist_id is None:
-                from_playlist = False
-                playlist_id = None
-                playlist_title = None
-                playlist_url = None
-            else:
-                from_playlist = True
-                playlist_id = {p.playlist_id}
-                playlist_title = {p.title}
-                playlist_url = {p.playlist_url}
-
-        mytube_update = {
-                video_id: {
-                    "date": History.TODAY,
-                    "action": action,
-                    "reason": reason,
-                    "url": yt.watch_url,
-                    "channel": c.channel_name,
-                    "from_playlist": from_playlist,
-                    "playlist_id": playlist_id,
-                    "playlist_title": playlist_title,
-                    "playlist_url": playlist_url,
-                    "views": yt.views,
-                    "title": yt.title,
-                    "length": (yt.length // 60),
-                    "age": (yt.publish_date.strftime("%Y-%m-%d %H:%M:%S"))
+        if 'playlist_id' in kwargs.keys():
+            pid = kwargs.values['playlist_id']
+            p = Playlist(f"https://www.youtube.com/playlist?list={pid}")
+            mytube_update = {
+                    video_id: {
+                        "date": __class__.TODAY,
+                        "action": action,
+                        "reason": reason,
+                        "url": yt.watch_url,
+                        "channel": c.channel_name,
+                        "playlist_id": p.playlist_id,
+                        "playlist_title": p.title,
+                        "playlist_url": p.playlist_url,
+                        "views": yt.views,
+                        "title": yt.title,
+                        "length": (yt.length // 60),
+                        "age": (yt.publish_date.strftime("%Y-%m-%d %H:%M:%S")),
+                    },
                 }
-            }
+        else:
+            mytube_update = {
+                    video_id: {
+                        "date": __class__.TODAY,
+                        "action": action,
+                        "reason": reason,
+                        "url": yt.watch_url,
+                        "channel": c.channel_name,
+                        "views": yt.views,
+                        "title": yt.title,
+                        "length": (yt.length // 60),
+                        "age": (yt.publish_date.strftime("%Y-%m-%d %H:%M:%S")),
+                    },
+                }
 
         # Append the history file
-        with open(f"{os.path.dirname(__file__)}/.archive/MyTubeHistory.json",'r+') as mytube_history:
-            data = json.load(mytube_history)
-            data.update(mytube_update)
-            mytube_history.seek(2)
-            json.dump(data, mytube_history, indent=2)
-        mytube_history.close()
+        try:
+            if os.path.isfile(f"{os.path.dirname(__file__)}/../.archive/MyTubeHistory.json"):
+                with open(f"{os.path.dirname(__file__)}/../.archive/MyTubeHistory.json",'r') as mytube_history:
+                    data = json.load(mytube_history)
+                    mytube_history.seek(2)
+                    data.update(mytube_update)
+                mytube_history.close()
+                json.dump(mytube_update, open(f"{os.path.dirname(__file__)}/../.archive/MyTubeHistory.json", 'a'), indent=2)
+            else:
+                json.dump(mytube_update, open(f"{os.path.dirname(__file__)}/../.archive/MyTubeHistory.json", 'w+'), indent=2)
+        except (JSONDecodeError, FileNotFoundError):
+            pass
