@@ -9,6 +9,7 @@ Logs/
 
 # User file ignore
 pending_downloads.txt
+*.json
 
 # Sensative .config directory items
 .config/
