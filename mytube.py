@@ -56,6 +56,7 @@ worksheet = workbook.add_worksheet()
 
 # Add formatting to the worksheet
 bold = workbook.add_format({'bold': True})
+comma = workbook.add_format({'num_format': '#,##0'})
 
 # Add the headers to the worksheet
 worksheet.write(0, 0, 'Channel Name', bold)
@@ -67,13 +68,14 @@ worksheet.write(0, 5, 'Video URL', bold)
 
 # Set the increment
 ROW = 1
-NEWS = 0
-MADDOW = 0
+NEWS = 1
+MADDOW = 1
 
 # Variables, Lists, and Dictionaries
 NOW = (datetime.datetime.now()).strftime("%Y/%m/%d %H:%M:%S")
 RESULTS_ARRAY = []
 HISTORY_ARRAY = []
+CNN_DOUBLES = []
 PLAYLIST_NAME = ""
 
 # Populate the history list
@@ -100,8 +102,13 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
             try:
                 c = Channel(URL)
                 CHANNEL_NAME = str(c.channel_name)
-                print(f"\n--------------------------------\n>> Working on Channel: \"{CHANNEL_NAME}\"\nVideo Count:", end="")
-                print(f" {pretty(len(c.video_urls))}", end="\n--------------------------------\n")
+                if (CHANNEL_NAME in ["NBC News", "VICE", "MSNBC", "CNN"]):
+                    print(f"\n--------------------------------\n>> Working on Channel: \"{CHANNEL_NAME}\"", end="")
+                    print(f"\n--------------------------------\n")
+                else:
+                    print(f"\n--------------------------------\n>> Working on Channel: \"{CHANNEL_NAME}\"\nVideo Count:", end="")
+                    print(f" {pretty(len(c.video_urls))}", end="")
+                    print(f"\n--------------------------------\n")                 
                 logger.info(f"Working on Channel: {CHANNEL_NAME}")
                 for VIDEO in c.video_urls:
                     yt = YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
@@ -110,13 +117,14 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                     if ID not in HISTORY_ARRAY:
                         LENGTH = int(yt.length // 60)
                         VIEWS = int(yt.views)
+                        VIEWX = (worksheet.write(ROW, 4, int(yt.views), comma))
                         KEYWORDS = str(yt.keywords)
 
                         # Channels I like, but don't care about the view counts
                         if CHANNEL_NAME in ['Primitive Technology', 'ReligionForBreakfast', 'PBS Eons','PBS Space Time','History of the Earth','History of the Universe','CGP Grey','Johnny Harris', 'Real Engineering', 'Real Science']:
                             if LENGTH >= 2:
                                 if LENGTH <= 120:
-                                    DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
+                                    DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWX, VIDEO]
                                     worksheet.write_row(ROW, 0, DATA)
                                     logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")
                                     ROW += 1
@@ -128,7 +136,7 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                             if LENGTH >= 2:
                                 if LENGTH <= 120:
                                     if VIEWS >= 250000:
-                                        DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
+                                        DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWX, VIDEO]
                                         worksheet.write_row(ROW, 0, DATA)
                                         logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")
                                         ROW += 1
@@ -140,7 +148,7 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                             if LENGTH >= 5:
                                 if LENGTH <= 120:
                                     if VIEWS >= 10000:
-                                        DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
+                                        DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWX, VIDEO]
                                         worksheet.write_row(ROW, 0, DATA)
                                         logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")
                                         ROW += 1
@@ -152,7 +160,7 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                             if LENGTH >= 10:
                                 if LENGTH <= 120:
                                     if VIEWS >= 10000000:
-                                        DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
+                                        DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWX, VIDEO]
                                         worksheet.write_row(ROW, 0, DATA)
                                         logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")                
                                         ROW += 1
@@ -164,36 +172,38 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                             if LENGTH >= 10:
                                 if LENGTH <= 120:
                                     if VIEWS >= 30000000:
-                                        DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
+                                        DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWX, VIDEO]
                                         worksheet.write_row(ROW, 0, DATA)
                                         logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")                
                                         ROW += 1
                                         RESULTS_ARRAY.append(VIDEO)
                                         continue
-           
+
                         # Nightly News
                         elif CHANNEL_NAME == 'NBC News':
-                            if LENGTH >= 10:
-                                # The 'CheckDate' Function ensures that we're only capturing content that is
-                                # no more than 30 days old.
-                                if (KEYWORDS.__contains__('Nightly News')):
-                                    if (CheckDate(VIDEO)):
-                                        if (NEWS <= 12):
-                                            DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
-                                            worksheet.write_row(ROW, 0, DATA)
-                                            logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")
-                                            ROW += 1
-                                            # The 'NEWS' variable is used to ensure that we only capture 12 videos
-                                            NEWS += 1
-                                            RESULTS_ARRAY.append(VIDEO)
-                                            continue
+                            if (NEWS <= 12):
+                            # The 'CheckDate' Function ensures that we're only capturing content that is
+                            # no more than 30 days old.
+                                if (CheckDate(VIDEO)):
+                                    if (KEYWORDS.__contains__('Nightly News')):
+                                        if LENGTH >= 10:
+                                                DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWX, VIDEO]
+                                                worksheet.write_row(ROW, 0, DATA)
+                                                logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")
+                                                ROW += 1
+                                                # The 'NEWS' variable is used to ensure that we only capture 12 videos
+                                                NEWS += 1
+                                                RESULTS_ARRAY.append(VIDEO)
+                                                continue
+                            else:
+                                break
 
                         # Standard Catch All
                         elif VIEWS <= 35000000:
                             if LENGTH >= 10:
                                 if LENGTH <= 120:
                                     if VIEWS >= 2500000:
-                                        DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
+                                        DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWX, VIDEO]
                                         worksheet.write_row(ROW, 0, DATA)
                                         logger.info(f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet")                
                                         ROW += 1
@@ -202,7 +212,7 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
 
                         # Special Circumstances
                         elif VIEWS >= 35000000:
-                            DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
+                            DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWX, VIDEO]
                             worksheet.write_row(ROW, 0, DATA)
                             logger.info((f"Added: (( '{CHANNEL_NAME}' )) \"{TITLE}\" to the spreadsheet, because it has too many views to ignore ({pretty(VIEWS)})!"))
                             ROW += 1
@@ -213,7 +223,7 @@ with open(f'{os.path.dirname(__file__)}/.config/channels-to-grab.txt') as f:
                         logger.info(f"Discarded: (( '{CHANNEL_NAME}' )) \"{TITLE}\" because we already have it")
                         continue
 
-            except (RegexMatchError, UnicodeEncodeError, KeyError, PytubeError) as error:
+            except (RegexMatchError, UnicodeEncodeError, KeyError, PytubeError, TimeoutError) as error:
                 logger.exception(error)
                 continue
         
@@ -244,42 +254,62 @@ with open(f'{os.path.dirname(__file__)}/.config/playlists-to-grab.txt') as f:
                 PLAYLIST_URL = str(p.playlist_url)
 
                 # Log the Playlist name
-                logger.info(f"Working on Playlist: (( \"{PLAYLIST_NAME}\" )) << \"{CHANNEL_NAME}\" >>")
+                if (CHANNEL_NAME in ["NBC News", "VICE", "MSNBC", "CNN"]):
+                    print(f"\n--------------------------------\n>> Working on Playlist: (( \"{PLAYLIST_NAME}\" )) << \"{CHANNEL_NAME}\" >>", end="")
+                    print(f"\n--------------------------------\n")
+                else:
+                    print(f"\n--------------------------------\n>> Working on Playlist: (( \"{PLAYLIST_NAME}\" )) << \"{CHANNEL_NAME}\" >>\nVideo Count:", end="")
+                    print(f" {pretty(len(p.video_urls))}", end="")
+                    print(f"\n--------------------------------\n")                 
 
                 # Loop through the videos in the playlist
                 for VIDEO in p.video_urls:
                     yt = YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
                     LENGTH = int(yt.length // 60)
                     VIEWS = int(yt.views)
+                    VIEWX = (worksheet.write(ROW, 4, int(yt.views), comma))
                     TITLE = str(yt.title)
                     ID = str(yt.video_id)
                     if ID not in HISTORY_ARRAY:
-                        if (TITLE.__contains__('Rachel Maddow Highlights')):
-                            # The 'CheckDate' Function ensures that we're only capturing content that is
-                            # no more than 30 days old.
-                            if (CheckDate(VIDEO)):
-                                if (MADDOW <= 12):
-                                    DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
-                                    worksheet.write_row(ROW, 0, DATA)
-                                    logger.info(f"Added Playlist: (( '{CHANNEL_NAME}', '{PLAYLIST_NAME}' )) << \"{TITLE}\" >> to the spreadsheet")
-                                    ROW += 1
-                                    # The 'MADDOW' variable is used to ensure that we only capture 12 videos
-                                    MADDOW += 1
-                                    RESULTS_ARRAY.append(VIDEO)
-                                    continue
+                        if PLAYLIST_NAME == 'Highlights From MSNBC':
+                            if (MADDOW <= 12):
+                                if (CheckDate(VIDEO)):
+                                    if (TITLE.__contains__('Rachel Maddow Highlights')):
+                                        # The 'CheckDate' Function ensures that we're only capturing content that is
+                                        # no more than 30 days old.
+                                                DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWX, VIDEO]
+                                                worksheet.write_row(ROW, 0, DATA)
+                                                logger.info(f"Added Playlist: (( '{CHANNEL_NAME}', '{PLAYLIST_NAME}' )) << \"{TITLE}\" >> to the spreadsheet")
+                                                ROW += 1
+                                                # The 'MADDOW' variable is used to ensure that we only capture 12 videos
+                                                MADDOW += 1
+                                                RESULTS_ARRAY.append(VIDEO)
+                                                continue
+                            else:
+                                break
+                        elif CHANNEL_NAME == 'CNN':
+                            if ((LENGTH >= 15) and (LENGTH <= 30)):
+                                if (ID not in CNN_DOUBLES):
+                                    if (CheckDate(VIDEO)):
+                                        DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWX, VIDEO]
+                                        worksheet.write_row(ROW, 0, DATA)
+                                        logger.info(f"Added Playlist: (( '{CHANNEL_NAME}', '{PLAYLIST_NAME}' )) << \"{TITLE}\" >> to the spreadsheet")
+                                        ROW += 1
+                                        RESULTS_ARRAY.append(VIDEO)
+                                        CNN_DOUBLES.append(ID)
+                                        continue
                         else:
-                            if LENGTH >= 2:
+                            if LENGTH >= 8:
                                 if LENGTH <= 120:
-                                    DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWS, VIDEO]
+                                    DATA = [CHANNEL_NAME, PLAYLIST_NAME, TITLE, LENGTH, VIEWX, VIDEO]
                                     worksheet.write_row(ROW, 0, DATA)
                                     logger.info(f"Added Playlist: (( '{CHANNEL_NAME}', '{PLAYLIST_NAME}' )) << \"{TITLE}\" >> to the spreadsheet")
                                     ROW += 1
                                     RESULTS_ARRAY.append(VIDEO)
                                     continue
 
-            except (RegexMatchError, UnicodeEncodeError, KeyError, PytubeError) as error:
+            except (RegexMatchError, UnicodeEncodeError, KeyError, PytubeError, TimeoutError) as error:
                logger.exception(error)
-               continue
     # Close the playlists file
     f.close()
 
