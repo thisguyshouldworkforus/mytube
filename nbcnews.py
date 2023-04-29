@@ -1,4 +1,4 @@
-# Python 3.10.0
+# Python 3.11.1
 
 # Import Modules
 import os
@@ -8,7 +8,6 @@ import subprocess
 from pytube import Channel, YouTube
 from pytube.exceptions import RegexMatchError
 from datetime import datetime
-
 
 # Format Numbers
 def pretty(num):
@@ -78,7 +77,7 @@ def main():
         logger.exception(e)
     
     # Construct the Channel object
-    c = Channel('https://www.youtube.com/c/UCeY0bbntWzzVIaj2z3QigXg')
+    c = Channel(str('https://www.youtube.com/c/NBCNews'))
     CHANNEL_NAME = str(c.channel_name)
     logger.info(f"Working on Channel: {CHANNEL_NAME}")
     for VIDEO in c.video_urls:
