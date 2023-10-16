@@ -4,12 +4,5 @@ __pycache__/
 # .vscode
 .vscode/
 
-# Igorne Log Files
-Logs/
-
-# User file ignore
-pending_downloads.txt
-*.json
-
-# Sensative .config directory items
-.config/
+# Igorne Python Virtual Environment
+mytube-venv/
