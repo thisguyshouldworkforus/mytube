@@ -1,4 +1,4 @@
-#!/usr/bin/python3.11
+#!/usr/bin/env python3
 
 # Import Modules
 import os

@@ -1,6 +1,7 @@
-#!/usr/bin/python3.11
+#!/usr/bin/env python3
 
 from pytube import Channel, YouTube
+
 c = Channel(str('https://www.youtube.com/c/NBCNews'))
 yt = YouTube(str('https://www.youtube.com/watch?v=u_Inerso8NQ&t=6s'), use_oauth=True, allow_oauth_cache=True)
 ID = str(yt.video_id)
