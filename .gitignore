@@ -6,3 +6,6 @@ __pycache__/
 
 # Igorne Python Virtual Environment
 mytube-venv/
+
+# Ignore sensitive information
+.credentials/
