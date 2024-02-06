@@ -1,1 +1,1 @@
-pytube>=15.0.0
+pytubefix >= 1.13.3
