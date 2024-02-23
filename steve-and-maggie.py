@@ -7,12 +7,12 @@ import subprocess
 import re
 import requests
 import sys
-from pytubefix import YouTube, Playlist
+from pytubefix import Channel, YouTube
 from datetime import datetime
 
 # Define a lockfile, so we can increase
 # the run scheduled without running over ourselves
-pidfile = "/tmp/nbc_news.lock"
+pidfile = "/tmp/steve-and-maggie.lock"
 
 # This is a more robust way to check if the process is currently running
 def is_process_running(pidfile):
@@ -48,39 +48,10 @@ headers={
     "Tags": "tada,partying_face"
 }
 
-# Declare HISTORY_ID as a global variable
-HISTORY_ID = None
-
-def CheckHistory(URL):
-    global HISTORY_ID  # Tell Python we intend to use the global variable
-    
-    # Regular expression pattern to capture YouTube video ID
-    pattern = re.compile(r'v=([-\w]+)')
-    
-    # Search for the pattern in the URL
-    match = pattern.search(URL)
-
-    if match:
-        # Update the global HISTORY_ID variable
-        HISTORY_ID = match.group(1)
-    else:
-        # Raise a more specific exception with a message
-        raise ValueError("Invalid URL: No YouTube video ID found.")
-
-    history_file_path = "/opt/projects/mytube/yt-dlp/history/nbcnews_history.txt"
-    
-    # Read the history file and check if the ID is already present
-    with open(history_file_path, "r+") as history_file:
-        history_content = history_file.read()
-        
-        # Construct regex pattern to search for the ID
-        pattern = re.compile(r'\b' + re.escape(HISTORY_ID) + r'\b')
-        
-        # Check if ID is in file
-        if pattern.search(history_content):
-            return True
-        else:
-            return False
+# Format Numbers
+def pretty(num):
+    OUTPUT = str("{:,}".format(num))
+    return OUTPUT
 
 def CheckDate(URL):
 
@@ -113,55 +84,61 @@ def main():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s:%(levelname)s' + '\n' + '%(message)s' + '\n')
-    file_handler = logging.FileHandler(f'{os.path.dirname(__file__)}/logs/nbcnews.{TODAY}.log', mode='a', encoding='utf-8')
+    file_handler = logging.FileHandler(f'{os.path.dirname(__file__)}/logs/steve-and-maggie.{TODAY}.log', mode='a', encoding='utf-8')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     
-    # Set the increment
-    NEWS = 0
-    
     # Variables, Lists, and Dictionaries
     RESULTS_ARRAY = []
+   
+    # Nice
     
     # Construct the Channel object
-    #c = Channel(str('https://www.youtube.com/@NBCNews'))
-    #CHANNEL_NAME = str(c.channel_name)
-    p = Playlist('https://www.youtube.com/playlist?list=PL0tDb4jw6kPymVj5xNNha5PezudD5Qw9L')
-    PLAYLIST_TITLE = str(p.title)
-    logger.info(f"Working on Playlist: {PLAYLIST_TITLE}")
+    c = Channel(str('https://www.youtube.com/@Steve_and_Maggie/videos'))
+    CHANNEL_NAME = str(c.channel_name)
+    logger.info(f"Working on Channel: {CHANNEL_NAME}")
     
-    for VIDEO in p.video_urls:
+    for VIDEO in c.video_urls:
         yt = YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
         ID = str(yt.video_id)
         TITLE = str(yt.title)
         LENGTH = int(yt.length // 60)
         KEYWORDS = str(yt.keywords)
-        # The 'CheckDate' Function ensures that we're only capturing content that is
-        # no more than 2 days old.
-        if (not(CheckHistory(VIDEO))): # Video is NOT in the history file
-            if (CheckDate(VIDEO)):
-                if LENGTH >= 15:
-                    if (not (NEWS >= 10)):
-                        NEWS += 1
-                        # The 'NEWS' variable is used to ensure that we only capture 5.
-                        logger.info(f"\n\t{NEWS}: '{TITLE}' ({ID}) is a match!\n")
-                        RESULTS_ARRAY.append(VIDEO)
-                        continue
-                    else:
-                        break
+        logger.info(f"\n\t'{TITLE}' ({ID}) is a match!\n")
+        RESULTS_ARRAY.append(VIDEO)
+        continue
 
     for RESULT in RESULTS_ARRAY:
-        if (not(CheckHistory(RESULT))): # Video is NOT in the history file
-            yt = YouTube(str(RESULT), use_oauth=True, allow_oauth_cache=True)
-            TITLE = str(yt.title)
-            BINARY = ['/opt/projects/mytube/yt-dlp/yt-dlp']
-            CONFIG = ['--config-locations', '/opt/projects/mytube/yt-dlp/conf/NBCNews.conf']
-            VIDEO_URL = [RESULT]
-            DOWNLOAD = BINARY + CONFIG + VIDEO_URL
-            history_file_path = "/opt/projects/mytube/yt-dlp/history/nbcnews_history.txt"
         
-            # Read the history file and check if the ID is already present
-            with open(history_file_path, "r+") as history_file:
+        # Regular expression pattern to capture YouTube video ID
+        pattern = re.compile(r'v=([-\w]+)')
+        
+        # Search for the pattern in the URL
+        match = pattern.search(RESULT)
+
+        if match:
+            HISTORY_ID = match.group(1)
+            logger.info(f"\n\nCaptured HISTORY_ID: {HISTORY_ID}\n\n")
+        else:
+            logger.error("No video ID found in URL.")
+            continue
+
+        BINARY = ['/opt/projects/mytube/yt-dlp/yt-dlp']
+        CONFIG = ['--config-locations', '/opt/projects/mytube/yt-dlp/conf/steve-and-maggie.conf']
+        VIDEO_URL = [RESULT]
+        DOWNLOAD = BINARY + CONFIG + VIDEO_URL
+        history_file_path = "/opt/projects/mytube/yt-dlp/history/sam_history.txt"
+        
+        # Read the history file and check if the ID is already present
+        with open(history_file_path, "r+") as history_file:
+            history_content = history_file.read()
+            
+            # Construct regex pattern to search for the ID
+            pattern = re.compile(r'\b' + re.escape(HISTORY_ID) + r'\b')
+            
+            # Check if ID is in file
+            if not pattern.search(history_content):
+            
                 # If an entry for the video ID does not yet exist in the history file, then download it.
                 OUTPUT = subprocess.run(DOWNLOAD, stdout=subprocess.PIPE, text=True)
                 logger.info(OUTPUT.stdout)
@@ -171,12 +148,20 @@ def main():
                 data = (f"Downloaded\n'{TITLE}'\n").encode(encoding='utf-8')
 
                 # Sending a POST request
-                requests.post(url, data=data, headers=headers)
+                response = requests.post(url, data=data, headers=headers)
+
+                # Checking the response (optional)
+                if response.status_code == 200:
+                    logger.info('Notification sent successfully.')
+                else:
+                    logger.error('Failed to send notification. Status code:', response.status_code)
 
                 # Update the history file
                 history_file.write(f"youtube {HISTORY_ID}\n")
                 logger.info(f"ID {HISTORY_ID} added to history.")
-
+            else:
+                logger.error(f"ID {HISTORY_ID} already exists in history.")
+                continue
     # Remove the lock file when the script finishes
     os.remove(pidfile)
 

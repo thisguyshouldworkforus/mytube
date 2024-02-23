@@ -9,3 +9,6 @@ venv/
 
 # Ignore sensitive information
 .credentials/
+
+# Ignore Logs
+logs/
