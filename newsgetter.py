@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-# Import Modules
 import os
 import logging
 import subprocess
@@ -8,106 +7,80 @@ import sys
 import pytubefix
 import pytubefix.helpers
 import datetime
-from libs.functions import is_process_running, CheckHistory, FileName, NotifyMe, WriteHistory, RescanSeries
+from libs.functions import safe_file_remove, is_process_running, CheckHistory, FileName, NotifyMe, WriteHistory, RescanSeries
 
-# Define a lockfile, so we can increase
-# the run scheduled without running over ourselves
-pidfile = "/tmp/newsgetter.lock"
+# Use constants for fixed values to improve readability and maintainability
+PIDFILE_PATH = "/tmp/newsgetter.lock"
+LOCKFILE_MODE = 'w'
+LOG_DIR = 'logs'
+DOWNLOADS_DIR = '/opt/projects/mytube/downloads'
+OUTPUT_PATH = "/opt/media/tv.shows/NBC Nightly News with Lester Holt (2013) {tvdb-139911}"
 
-# If the PID File exists, check to see if the contained PID is actually running
-# If its not, delete the file.
-if os.path.exists(pidfile):
-    if not is_process_running(pidfile):
-        try:
-            subprocess.run(['rm', '-f', pidfile], check=True)
-        except subprocess.CalledProcessError:
-            pass
+# Ensure the existence of a lockfile to prevent concurrent execution
+if os.path.exists(PIDFILE_PATH):
+    if not is_process_running(PIDFILE_PATH):
+        safe_file_remove(PIDFILE_PATH)
     else:
-        sys.exit(1) # Reaching this step means the PID exists and it is currently running. Exit.
+        sys.exit(1)  # Exit if another instance is running
 
 # Create the lock file
-with open(pidfile, "w") as f:
+with open(PIDFILE_PATH, LOCKFILE_MODE) as f:
     f.write(str(os.getpid()))
 
 def main():
+    # Setup logging with proper formatting and filename based on current date and time
+    today = datetime.datetime.now().strftime("%Y%m%d-%H%M")
+    log_filename = f"{LOG_DIR}/nbcnews.{today}.log"
+    logging.basicConfig(filename=log_filename, level=logging.INFO, format='%(asctime)s:%(levelname)s\n%(message)s\n', datefmt='%Y-%m-%d %H:%M:%S')
 
-    # Construct the date object
-    TODAY = (datetime.datetime.now()).strftime("%Y%m%d-%H%M")
-    
-    # Create an info log file
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s:%(levelname)s' + '\n' + '%(message)s' + '\n')
-    file_handler = logging.FileHandler(f'{os.path.dirname(__file__)}/logs/nbcnews.{TODAY}.log', mode='a', encoding='utf-8')
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-    
-    p = pytubefix.Playlist('https://www.youtube.com/playlist?list=PL0tDb4jw6kPymVj5xNNha5PezudD5Qw9L')
-    PLAYLIST_TITLE = str(p.title)
-    logger.info(f"Working on Playlist: {PLAYLIST_TITLE}")
-    
-    LOOP=0
+    # Initialize the YouTube playlist
+    playlist_url = 'https://www.youtube.com/playlist?list=PL0tDb4jw6kPymVj5xNNha5PezudD5Qw9L'
+    playlist = pytubefix.Playlist(playlist_url)
+    playlist_title = playlist.title
+    logging.info(f"Working on Playlist: {playlist_title}")
 
-    for VIDEO in p.video_urls:
-        LOOP +=1
-        
-        yt = pytubefix.YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
-        TEMP_DIR = str(pytubefix.helpers.target_directory('/opt/projects/mytube/downloads'))
-
-        ID = str(yt.video_id)
-        TITLE = str(yt.title)
-        PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
-
-        # Only get the first 10 items in the playlist
-        if (not(LOOP >= 10)):
-            if (not(CheckHistory(VIDEO))): # Video is NOT in the history file
-
-                logger.info(f"\n'{TITLE}' ({ID}) was not in history, and will be downloaded.\n")
-
-                # Construct FFMPEG objects
-                input_audio = yt.streams.filter(adaptive=True, mime_type="audio/webm", abr="160kbps").first().download(f"{TEMP_DIR}",f"{PUBLISH_DATE}.audio.webm")
-                input_video = yt.streams.filter(adaptive=True, mime_type="video/webm",res="1080p",).first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.video.webm")
-                output_path="/opt/media/tv.shows/NBC Nightly News with Lester Holt (2013) {tvdb-139911}" # Desired output file path
-                output_filename = FileName(PUBLISH_DATE)
-                hero = f"{output_path}/{output_filename}"
-
-                # Command to mux video and audio
-                command = ["/usr/bin/ffmpeg", "-i", input_audio, "-i", input_video, '-c:v', 'libx264', '-preset', 'medium', '-c:a', 'aac', '-strict', 'experimental', '-b:a', '128k', hero]
-
-                # If an entry for the video ID does not yet exist in the history file, then download it.
-                OUTPUT = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
-                logger.info(OUTPUT.stdout)
-                logger.error(OUTPUT.stderr)
-
-                if OUTPUT.returncode == 0:
-                    logger.info(f"Downloaded '{TITLE}'")
-
-                    # Send an NTFY notification
-                    NotifyMe('New Episode!','5','partying_face',f"Downloaded {TITLE}")
-
-                    # Update the history file
-                    WriteHistory(VIDEO)
-
-                    # Clean up our mess
-                    os.remove(input_audio)
-                    os.remove(input_video)
-
-                    # Tell Sonarr to rescan
-                    RescanSeries(98)
-                else:
-                    print("There was an error in the FFMPEG")
-                    logger.error("There was an error in the FFMPEG")
-                    NotifyMe('Error!','5','face_with_spiral_eyes','There was an error in the FFMPEG')
-                    sys.exit(1)
-
-            else: # Video IS in the history file
-                logger.error(f"\n'{TITLE}' ({ID}) WAS in history, and will be disgarded.\n")
-                continue
-        else:
+    # Process videos in the playlist
+    for index, video_url in enumerate(playlist.video_urls, start=1):
+        # Limit to the first 10 items in the playlist
+        if index > 10:
             break
 
-    # Remove the lock file when the script finishes
-    os.remove(pidfile)
+        yt = pytubefix.YouTube(video_url, use_oauth=True, allow_oauth_cache=True)
+        video_id = yt.video_id
+        title = yt.title
+        publish_date = yt.publish_date.strftime("%Y-%m-%d")
+
+        if not CheckHistory(video_url):
+            logging.info(f"'{title}' ({video_id}) was not in history, and will be downloaded.")
+
+            temp_dir = pytubefix.helpers.target_directory(DOWNLOADS_DIR)
+            input_audio = yt.streams.filter(adaptive=True, mime_type="audio/webm", abr="160kbps").first().download(temp_dir, f"{publish_date}.audio.webm")
+            input_video = yt.streams.filter(adaptive=True, mime_type="video/webm", res="1080p").first().download(temp_dir, f"{publish_date}.video.webm")
+            output_filename = FileName(publish_date)
+            final_output_path = f"{OUTPUT_PATH}/{output_filename}"
+
+            # Mux video and audio using ffmpeg
+            command = ["/usr/bin/ffmpeg", "-i", input_audio, "-i", input_video, '-c:v', 'libx264', '-preset', 'medium', '-c:a', 'aac', '-strict', 'experimental', '-b:a', '128k', final_output_path]
+            try:
+                subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                logging.info(f"Downloaded '{title}'")
+
+                NotifyMe('New Episode!', '5', 'partying_face', f"Downloaded {title}")
+                WriteHistory(video_url)
+                RescanSeries(98)
+            except subprocess.CalledProcessError as e:
+                logging.error("Error during ffmpeg execution: " + str(e))
+                NotifyMe('Error!', '5', 'face_with_spiral_eyes', 'There was an error in the FFMPEG')
+                sys.exit(1)
+            finally:
+                # Clean up downloaded files
+                safe_file_remove(input_audio)
+                safe_file_remove(input_video)
+        else:
+            logging.info(f"'{title}' ({video_id}) was in history, and will be disregarded.")
+
+    # Clean up: Remove the lock file
+    safe_file_remove(PIDFILE_PATH)
 
 if __name__ == '__main__':
     main()

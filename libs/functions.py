@@ -11,6 +11,13 @@ import pytubefix
 import pytubefix.helpers
 import datetime
 
+# Define a function to remove a file safely
+def safe_file_remove(filename):
+    try:
+        os.remove(filename)
+    except OSError as e:
+        logging.error(f"Error removing file {filename}: {e}")
+
 # This is a more robust way to check if the process is currently running
 def is_process_running(pidfile):
     try:
