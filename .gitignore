@@ -8,13 +8,16 @@ __pycache__/
 venv/
 
 # Ignore sensitive information
-.credentials/
+credentials/
 
 # Ignore Logs
 logs/
 
 # Ignore downloads temp directory
 downloads/
+
+# Ignore history
+history/
 
 # Ignore yt-dlp
 yt-dlp/
