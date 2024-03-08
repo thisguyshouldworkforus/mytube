@@ -1,0 +1,20 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# .vscode
+.vscode/
+
+# Igorne Python Virtual Environment
+venv/
+
+# Ignore sensitive information
+.credentials/
+
+# Ignore Logs
+logs/
+
+# Ignore downloads temp directory
+downloads/
+
+# Ignore yt-dlp
+yt-dlp/
