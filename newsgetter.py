@@ -41,7 +41,7 @@ def main():
     # Iterate through the playlist
     for index, video_url in enumerate(p.video_urls, start=1):
         # Limit to the first 10 items in the playlist
-        if index > 10:
+        if index == 10:
             InfoLogger(f"Reached the playlist limit ({index} items).")
             break
         else:
