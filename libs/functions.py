@@ -6,20 +6,28 @@ import subprocess
 import re
 import requests
 import datetime
+import os
 
-    # Create an info log file
-def InfoLogger():
+def InfoLogger(message=None):
+    log_directory = '/opt/projects/mytube/logs/'
+    os.makedirs(log_directory, exist_ok=True)
 
-    # Construct the date object
-    TODAY = (datetime.datetime.now()).strftime("%Y%m%d")
-
+    TODAY = datetime.datetime.now().strftime("%Y%m%d")
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s:%(levelname)s' + '\n' + '%(message)s' + '\n')
-    file_handler = logging.FileHandler(f'/opt/projects/mytube/logs/nbcnews.{TODAY}.log', mode='a+', encoding='utf-8')
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+    
+    if not logger.hasHandlers():
+        logger.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s:%(levelname)s' + '\n' + '%(message)s' + '\n')
+        file_handler = logging.FileHandler(f'{log_directory}nbcnews.{TODAY}.log', mode='a', encoding='utf-8')
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    # Log the provided message if one was given
+    if message:
+        logger.info(message)
+
     return logger
+
 
 # This is a more robust way to check if the process is currently running
 def CheckProcess(pidfile):
