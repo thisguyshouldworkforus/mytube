@@ -12,7 +12,7 @@ from libs.functions import safe_file_remove, is_process_running, CheckHistory, F
 # Use constants for fixed values to improve readability and maintainability
 PIDFILE_PATH = "/tmp/newsgetter.lock"
 LOCKFILE_MODE = 'w'
-LOG_DIR = 'logs'
+LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
 DOWNLOADS_DIR = '/opt/projects/mytube/downloads'
 OUTPUT_PATH = "/opt/media/tv.shows/NBC Nightly News with Lester Holt (2013) {tvdb-139911}"
 
@@ -29,9 +29,20 @@ with open(PIDFILE_PATH, LOCKFILE_MODE) as f:
 
 def main():
     # Setup logging with proper formatting and filename based on current date and time
-    today = datetime.datetime.now().strftime("%Y%m%d-%H%M")
+    today = datetime.datetime.now().strftime("%Y%m%d")
     log_filename = f"{LOG_DIR}/nbcnews.{today}.log"
-    logging.basicConfig(filename=log_filename, level=logging.INFO, format='%(asctime)s:%(levelname)s\n%(message)s\n', datefmt='%Y-%m-%d %H:%M:%S')
+
+    # Create a custom logger
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    
+    # Create a file handler that appends log entries instead of overwriting
+    file_handler = logging.FileHandler(log_filename, mode='a')
+    formatter = logging.Formatter('%(asctime)s:%(levelname)s\n%(message)s\n', '%Y-%m-%d %H:%M:%S')
+    file_handler.setFormatter(formatter)
+    
+    # Add the file handler to the logger
+    logger.addHandler(file_handler)
 
     # Initialize the YouTube playlist
     playlist_url = 'https://www.youtube.com/playlist?list=PL0tDb4jw6kPymVj5xNNha5PezudD5Qw9L'
