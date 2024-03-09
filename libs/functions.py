@@ -1,25 +1,28 @@
 #!/usr/bin/env python3
 
 # Import Modules
-import os
 import logging
 import subprocess
 import re
 import requests
-import sys
-import pytubefix
-import pytubefix.helpers
 import datetime
 
-# Define a function to remove a file safely
-def safe_file_remove(filename):
-    try:
-        os.remove(filename)
-    except OSError as e:
-        logging.error(f"Error removing file {filename}: {e}")
+    # Create an info log file
+def InfoLogger():
+
+    # Construct the date object
+    TODAY = (datetime.datetime.now()).strftime("%Y%m%d")
+
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s:%(levelname)s' + '\n' + '%(message)s' + '\n')
+    file_handler = logging.FileHandler(f'/opt/projects/mytube/logs/nbcnews.{TODAY}.log', mode='a+', encoding='utf-8')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    return logger
 
 # This is a more robust way to check if the process is currently running
-def is_process_running(pidfile):
+def CheckProcess(pidfile):
     try:
         subprocess.run(['pgrep', '--pidfile', pidfile], check=True)
         return True
@@ -43,7 +46,7 @@ def CheckHistory(URL):
     history_file_path = "/opt/projects/mytube/history/nbcnews_history.txt"
     
     # Read the history file and check if the ID is already present
-    with open(history_file_path, "r+") as history_file:
+    with open(history_file_path, "r") as history_file:
         history_content = history_file.read()
         
         # Construct regex pattern to search for the ID
@@ -66,6 +69,10 @@ def FileName(PUBLISH_DATE):
     day = publish_date.day
     day_of_week = publish_date.strftime("%a")
 
+    # This is to fix a discrepency between how Linux (date) and Sonarr writes the day "Thursday"
+    if day_of_week == "Thu":
+        day_of_week = "Thur"
+
     # Calculate the day of the year (episode number)
     # Minus one day, because there was no episode on Saturday, January 13th.
     day_of_year = publish_date.timetuple().tm_yday - 1
@@ -73,6 +80,7 @@ def FileName(PUBLISH_DATE):
     # Construct the filename
     filename = f"NBC Nightly News with Lester Holt (2013) - S{year}E{day_of_year} - {month_abbr} {day} {day_of_week} ({PUBLISH_DATE}).mkv"
 
+    # return the filename
     return filename
 
 def NotifyMe(title: str = 'New Message', priority: str = 3, tags: str = 'incoming_envelope', message: str = 'No message included'):
@@ -115,16 +123,8 @@ def NotifyMe(title: str = 'New Message', priority: str = 3, tags: str = 'incomin
 def WriteHistory(URL):
 
     # Construct the date object
-    TODAY = (datetime.datetime.now()).strftime("%Y%m%d-%H%M")
+    TODAY = (datetime.datetime.now()).strftime("%Y%m%d")
     
-    # Create an info log file
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s:%(levelname)s' + '\n' + '%(message)s' + '\n')
-    file_handler = logging.FileHandler(f'{os.path.dirname(__file__)}/logs/nbcnews.{TODAY}.log', mode='a', encoding='utf-8')
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-
     # Regular expression pattern to capture YouTube video ID
     pattern = re.compile(r'v=([-\w]+)')
     
@@ -143,7 +143,7 @@ def WriteHistory(URL):
     # Read the history file and check if the ID is already present
     with open(history_file_path, "a") as history_file:
         history_file.write(f"youtube {HISTORY_ID}\n")
-    logger.info(f"ID {HISTORY_ID} added to history.")
+    InfoLogger(f"ID {HISTORY_ID} added to history.")
 
 def RescanSeries(SERIES_ID):
     # Get API Key
@@ -172,6 +172,7 @@ def RescanSeries(SERIES_ID):
     try:
         response = requests.post(URL, headers=HEADERS, json=RESCAN_DATA)
         if response.status_code == 201:
+            InfoLogger(f"Rescan command sent to Sonarr for series ID {SERIES_ID}.")
             return response.json()
     except Exception as e:
         print(f"There was an error!\n{e}")
