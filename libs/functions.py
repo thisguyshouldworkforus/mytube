@@ -8,7 +8,7 @@ import requests
 import datetime
 import os
 
-def InfoLogger(message=None):
+def InfoLogger(LOG: str = None, message: str =None):
     log_directory = '/opt/projects/mytube/logs/'
     os.makedirs(log_directory, exist_ok=True)
 
@@ -17,8 +17,8 @@ def InfoLogger(message=None):
     
     if not logger.hasHandlers():
         logger.setLevel(logging.INFO)
-        formatter = logging.Formatter('%(asctime)s:%(levelname)s' + '\n' + '%(message)s' + '\n')
-        file_handler = logging.FileHandler(f'{log_directory}nbcnews.{TODAY}.log', mode='a', encoding='utf-8')
+        formatter = logging.Formatter('%(asctime)s:%(levelname)s' + ' ::: ' + '%(message)s')
+        file_handler = logging.FileHandler(f'{log_directory}{LOG}.{TODAY}.log', mode='a', encoding='utf-8')
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
@@ -37,7 +37,7 @@ def CheckProcess(pidfile):
     except subprocess.CalledProcessError:
         return False
 
-def CheckHistory(URL):
+def CheckHistory(FILE: str = None, URL: str = None):
     # Regular expression pattern to capture YouTube video ID
     pattern = re.compile(r'v=([-\w]+)')
     
@@ -51,7 +51,7 @@ def CheckHistory(URL):
         # Raise a more specific exception with a message
         raise ValueError("Invalid URL: No YouTube video ID found.")
 
-    history_file_path = "/opt/projects/mytube/history/nbcnews_history.txt"
+    history_file_path = f"{FILE}"
     
     # Read the history file and check if the ID is already present
     with open(history_file_path, "r") as history_file:
@@ -66,7 +66,7 @@ def CheckHistory(URL):
         else:
             return False
 
-def FileName(PUBLISH_DATE):
+def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None):
 
     # Parse the PUBLISH_DATE to a datetime object
     publish_date = datetime.datetime.strptime(PUBLISH_DATE, "%Y-%m-%d")
@@ -86,7 +86,36 @@ def FileName(PUBLISH_DATE):
     day_of_year = publish_date.timetuple().tm_yday - 1
 
     # Construct the filename
-    filename = f"NBC Nightly News with Lester Holt (2013) - S{year}E{day_of_year} - {month_abbr} {day} {day_of_week} ({PUBLISH_DATE}).mkv"
+    filename = f"{SERIES_PREFIX}S{year}E{day_of_year} - {month_abbr} {day} {day_of_week} ({PUBLISH_DATE}).mkv"
+
+    # return the filename
+    return filename
+
+def FileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE: str = None):
+    from pytubefix.helpers import safe_filename
+
+    # Parse the PUBLISH_DATE to a datetime object
+    publish_date = datetime.datetime.strptime(PUBLISH_DATE, "%Y-%m-%d")
+
+    # Extract the year, month (as abbreviation), and day (with zero padding)
+    year = publish_date.year
+    month_abbr = publish_date.strftime("%b")
+    day = publish_date.day
+    day_of_week = publish_date.strftime("%a")
+
+    # This is to fix a discrepency between how Linux (date) and Sonarr writes the day "Thursday"
+    if day_of_week == "Thu":
+        day_of_week = "Thur"
+
+    # Calculate the day of the year (episode number)
+    # Minus one day, because there was no episode on Saturday, January 13th.
+    day_of_year = publish_date.timetuple().tm_yday
+
+    # Construct the filename
+    if EPISODE_TITLE:
+        filename = f"{SERIES_PREFIX}S{year}E{day_of_year} - {safe_filename(EPISODE_TITLE, max_length=100)} ({PUBLISH_DATE}).mkv"
+    else:
+        filename = f"{SERIES_PREFIX}S{year}E{day_of_year} - ({PUBLISH_DATE}).mkv"
 
     # return the filename
     return filename
@@ -128,7 +157,7 @@ def NotifyMe(title: str = 'New Message', priority: str = 3, tags: str = 'incomin
     # Sending a POST request
     requests.post(NTFY_URL, data=data, headers=headers)
 
-def WriteHistory(URL):
+def WriteHistory(FILE: str = None, URL: str = None):
 
     # Construct the date object
     TODAY = (datetime.datetime.now()).strftime("%Y%m%d")
@@ -146,12 +175,12 @@ def WriteHistory(URL):
         # Raise a more specific exception with a message
         raise ValueError("Invalid URL: No YouTube video ID found.")
 
-    history_file_path = "/opt/projects/mytube/history/nbcnews_history.txt"
+    history_file_path = f"{FILE}"
     
     # Read the history file and check if the ID is already present
     with open(history_file_path, "a") as history_file:
         history_file.write(f"youtube {HISTORY_ID}\n")
-    InfoLogger(f"ID {HISTORY_ID} added to history.")
+    print(f"ID {HISTORY_ID} added to history.")
 
 def RescanSeries(SERIES_ID):
     # Get API Key
@@ -180,7 +209,7 @@ def RescanSeries(SERIES_ID):
     try:
         response = requests.post(URL, headers=HEADERS, json=RESCAN_DATA)
         if response.status_code == 201:
-            InfoLogger(f"Rescan command sent to Sonarr for series ID {SERIES_ID}.")
+            print(f"Rescan command sent to Sonarr for series ID {SERIES_ID}.")
             return response.json()
     except Exception as e:
         print(f"There was an error!\n{e}")
