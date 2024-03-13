@@ -6,15 +6,15 @@ import subprocess
 import sys
 import pytubefix
 import pytubefix.helpers
-from libs.functions import CheckHistory, CheckProcess, NewsFileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory
+from libs.functions import InfoLogger, CheckProcess, CheckHistory, FileName, NotifyMe, WriteHistory
 
 ####[ REQUIRED VARIABLES ]####
-LOGGER = str('newsgetter')
-OUTPUT_PATH="/opt/media/tv.shows/NBC Nightly News with Lester Holt (2013) {tvdb-139911}"
-SERIES_PREFIX = str("NBC Nightly News with Lester Holt (2013) - ")
-URL = str('https://www.youtube.com/playlist?list=PL0tDb4jw6kPymVj5xNNha5PezudD5Qw9L')
-PLAYLIST = True
-CHANNEL = False
+LOGGER = str('hot-earth')
+OUTPUT_PATH="/opt/media/tv.docs/The Entire History of the Earth (2020) {tvdb-435420}"
+SERIES_PREFIX = str("The Entire History of the Earth (2020) - ")
+URL = str('https://www.youtube.com/@HistoryoftheEarth/videos')
+PLAYLIST = False
+CHANNEL = True
 ####[ REQUIRED VARIABLES ]####
 
 # Define a lockfile, so we can increase
@@ -52,15 +52,6 @@ def main():
     # Iterate through the playlist
     for index, VIDEO in enumerate(x.video_urls, start=1):
 
-        # Limit to the first 10 items in the playlist
-        if index == 11:
-
-            # Report that we've reached the limit (minus 1, because we're halting before processing the 11th.)
-            InfoLogger(LOGGER, f"Reached the index limit ({index - 1} playlist items).")
-            break
-        else:
-            InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
-        
         # Build the YouTube Object
         yt = pytubefix.YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
 
@@ -73,14 +64,14 @@ def main():
         PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
         HISTORY_PATH = "/opt/projects/mytube/history"
 
-        OUTPUT_FILENAME = NewsFileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}")
+        OUTPUT_FILENAME = FileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}", f"{TITLE}")
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
         # Check if the history file exists, and if not, create it
         if not os.path.exists(HISTORY_LOG):
             with open(HISTORY_LOG, "w") as f:
                 f.write(f"### {LOGGER} log ###\n")
 
-        ## Only capture videos from a specific date range
+        ## Only capture new videos
         #if not(yt.publish_date.year >= 2024):
         #    InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
         #    WriteHistory(HISTORY_LOG, VIDEO)
@@ -134,9 +125,6 @@ def main():
                 os.remove(input_audio)
                 os.remove(input_video)
                 os.remove(thumbnail_path)
-
-                # Rescan the series
-                RescanSeries(98)
 
                 # Send an NTFY notification
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")
