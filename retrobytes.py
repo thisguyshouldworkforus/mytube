@@ -9,10 +9,10 @@ import pytubefix.helpers
 from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory
 
 ####[ REQUIRED VARIABLES ]####
-LOGGER = str('hot-universe')
-OUTPUT_PATH="/opt/media/tv.docs/The Entire History of the Universe (2021) {tvdb-428626}"
-SERIES_PREFIX = str("The Entire History of the Universe (2021) - ")
-URL = str('https://www.youtube.com/@HistoryoftheUniverse/videos')
+LOGGER = str('retrobytes')
+OUTPUT_PATH="/opt/media/tv.docs/RetroBytes (2020) {tvdb-447483}"
+SERIES_PREFIX = str("RetroBytes (2020) - ")
+URL = str('https://www.youtube.com/@RetroBytesUK/videos')
 PLAYLIST = False
 CHANNEL = True
 ####[ REQUIRED VARIABLES ]####
