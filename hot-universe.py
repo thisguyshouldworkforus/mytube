@@ -101,6 +101,7 @@ def main():
                         os.remove(thumbnail_path)
                     if os.path.exists(input_audio):
                         os.remove(input_audio)
+                    WriteHistory(HISTORY_LOG, VIDEO)
                     continue
             # Download the video stream, try 1080p, if that fails, try 720p. If that fails, skip it.
             try:
@@ -115,8 +116,9 @@ def main():
                         os.remove(thumbnail_path)
                     if os.path.exists(input_audio):
                         os.remove(input_audio)
+                    WriteHistory(HISTORY_LOG, VIDEO)
                     continue
-            
+             
             final_output = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
 
             # Command to mux video and audio

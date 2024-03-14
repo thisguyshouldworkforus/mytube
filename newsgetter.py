@@ -9,7 +9,7 @@ import pytubefix.helpers
 from libs.functions import CheckHistory, CheckProcess, NewsFileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory
 
 ####[ REQUIRED VARIABLES ]####
-LOGGER = str('newsgetter')
+LOGGER = str('nbcnews')
 OUTPUT_PATH="/opt/media/tv.shows/NBC Nightly News with Lester Holt (2013) {tvdb-139911}"
 SERIES_PREFIX = str("NBC Nightly News with Lester Holt (2013) - ")
 URL = str('https://www.youtube.com/playlist?list=PL0tDb4jw6kPymVj5xNNha5PezudD5Qw9L')
@@ -110,6 +110,7 @@ def main():
                         os.remove(thumbnail_path)
                     if os.path.exists(input_audio):
                         os.remove(input_audio)
+                    WriteHistory(HISTORY_LOG, VIDEO)
                     continue
             # Download the video stream, try 1080p, if that fails, try 720p. If that fails, skip it.
             try:
@@ -124,6 +125,7 @@ def main():
                         os.remove(thumbnail_path)
                     if os.path.exists(input_audio):
                         os.remove(input_audio)
+                    WriteHistory(HISTORY_LOG, VIDEO)
                     continue
             
             final_output = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
