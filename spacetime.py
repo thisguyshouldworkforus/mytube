@@ -12,7 +12,7 @@ from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, Not
 LOGGER = str('spacetime')
 OUTPUT_PATH="/opt/media/tv.docs/PBS Space Time (2015) {tvdb-320016}"
 SERIES_PREFIX = str("PBS Space Time (2015) - ")
-URL = str('https://www.youtube.com/@pbsspacetime/videos')
+YOUTUBE_URL = str('https://www.youtube.com/@pbsspacetime/videos')
 PLAYLIST = False
 CHANNEL = True
 ####[ REQUIRED VARIABLES ]####
@@ -44,10 +44,10 @@ def main():
     
     if PLAYLIST:
         # Create a playlist object
-        x = pytubefix.Playlist(URL)
+        x = pytubefix.Playlist(YOUTUBE_URL)
     elif CHANNEL:
         # Create a channel object
-        x = pytubefix.Channel(URL)
+        x = pytubefix.Channel(YOUTUBE_URL)
 
     # Iterate through the playlist
     for index, VIDEO in enumerate(x.video_urls, start=1):
@@ -154,6 +154,12 @@ def main():
                 os.remove(input_video)
                 os.remove(thumbnail_path)
 
+                # New Subprocess Command
+                command = ["/opt/projects/mytube/venv/bin/python3.11", "/opt/projects/plex-metadata-updates/pbs_spacetime-renamer.py"]
+                
+                # Rename the episode in Plex
+                subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
+                
                 # Send an NTFY notification
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")
             else:

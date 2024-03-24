@@ -12,7 +12,7 @@ from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, Not
 LOGGER = str('weekendupdate')
 OUTPUT_PATH="/opt/media/tv.shows/SNL Weekend Update (1975) {tvdb-76177}"
 SERIES_PREFIX = str(f"SNL Weekend Update - ")
-URL = str('https://www.youtube.com/playlist?list=PLS_gQd8UB-hJZaYQLoQJ4XowUpXXjFxaV')
+YOUTUBE_URL = str('https://www.youtube.com/playlist?list=PLS_gQd8UB-hJZaYQLoQJ4XowUpXXjFxaV')
 PLAYLIST = True
 CHANNEL = False
 ####[ REQUIRED VARIABLES ]####
@@ -44,10 +44,10 @@ def main():
     
     if PLAYLIST:
         # Create a playlist object
-        x = pytubefix.Playlist(URL)
+        x = pytubefix.Playlist(YOUTUBE_URL)
     elif CHANNEL:
         # Create a channel object
-        x = pytubefix.Channel(URL)
+        x = pytubefix.Channel(YOUTUBE_URL)
 
     # Iterate through the playlist
     for index, VIDEO in enumerate(x.video_urls, start=1):

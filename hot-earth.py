@@ -12,7 +12,7 @@ from libs.functions import InfoLogger, CheckProcess, CheckHistory, FileName, Not
 LOGGER = str('hot-earth')
 OUTPUT_PATH="/opt/media/tv.docs/The Entire History of the Earth (2020) {tvdb-435420}"
 SERIES_PREFIX = str("The Entire History of the Earth (2020) - ")
-URL = str('https://www.youtube.com/@HistoryoftheEarth/videos')
+YOUTUBE_URL = str('https://www.youtube.com/@HistoryoftheEarth/videos')
 PLAYLIST = False
 CHANNEL = True
 ####[ REQUIRED VARIABLES ]####
@@ -44,10 +44,10 @@ def main():
     
     if PLAYLIST:
         # Create a playlist object
-        x = pytubefix.Playlist(URL)
+        x = pytubefix.Playlist(YOUTUBE_URL)
     elif CHANNEL:
         # Create a channel object
-        x = pytubefix.Channel(URL)
+        x = pytubefix.Channel(YOUTUBE_URL)
 
     # Iterate through the playlist
     for index, VIDEO in enumerate(x.video_urls, start=1):

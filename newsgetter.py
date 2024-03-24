@@ -12,7 +12,7 @@ from libs.functions import CheckHistory, CheckProcess, NewsFileName, InfoLogger,
 LOGGER = str('nbcnews')
 OUTPUT_PATH="/opt/media/tv.shows/NBC Nightly News with Lester Holt (2013) {tvdb-139911}"
 SERIES_PREFIX = str("NBC Nightly News with Lester Holt (2013) - ")
-URL = str('https://www.youtube.com/playlist?list=PL0tDb4jw6kPymVj5xNNha5PezudD5Qw9L')
+YOUTUBE_URL = str('https://www.youtube.com/playlist?list=PL0tDb4jw6kPymVj5xNNha5PezudD5Qw9L')
 PLAYLIST = True
 CHANNEL = False
 ####[ REQUIRED VARIABLES ]####
@@ -44,10 +44,10 @@ def main():
     
     if PLAYLIST:
         # Create a playlist object
-        x = pytubefix.Playlist(URL)
+        x = pytubefix.Playlist(YOUTUBE_URL)
     elif CHANNEL:
         # Create a channel object
-        x = pytubefix.Channel(URL)
+        x = pytubefix.Channel(YOUTUBE_URL)
 
     # Iterate through the playlist
     for index, VIDEO in enumerate(x.video_urls, start=1):
