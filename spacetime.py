@@ -6,7 +6,7 @@ import subprocess
 import sys
 import pytubefix
 import pytubefix.helpers
-from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory
+from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory, PlexUpdate
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('spacetime')
@@ -154,11 +154,8 @@ def main():
                 os.remove(input_video)
                 os.remove(thumbnail_path)
 
-                # New Subprocess Command
-                command = ["/opt/projects/mytube/venv/bin/python3.11", "/opt/projects/plex-metadata-updates/pbs_spacetime-renamer.py"]
-                
                 # Rename the episode in Plex
-                subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
+                PlexUpdate('6', 'http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F33165&context=source%3Acontent.library~2~10')
                 
                 # Send an NTFY notification
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")

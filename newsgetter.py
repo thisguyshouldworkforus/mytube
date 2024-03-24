@@ -6,7 +6,7 @@ import subprocess
 import sys
 import pytubefix
 import pytubefix.helpers
-from libs.functions import CheckHistory, CheckProcess, NewsFileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory
+from libs.functions import CheckHistory, CheckProcess, NewsFileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory, PlexUpdate
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('nbcnews')
@@ -166,6 +166,9 @@ def main():
                 # Rescan the series
                 RescanSeries(98)
 
+                # Rename the episode in Plex
+                PlexUpdate('5', 'http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F37103&context=source%3Acontent.library~16~3')
+                
                 # Send an NTFY notification
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")
             else:

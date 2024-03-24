@@ -6,7 +6,7 @@ import subprocess
 import sys
 import pytubefix
 import pytubefix.helpers
-from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory
+from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory, PlexUpdate
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('')
@@ -159,6 +159,9 @@ def main():
                 os.remove(input_video)
                 os.remove(thumbnail_path)
 
+                # Rename the episode in Plex
+                PlexUpdate()
+                
                 # Send an NTFY notification
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")
             else:
