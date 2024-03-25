@@ -13,6 +13,8 @@ LOGGER = str('')
 OUTPUT_PATH=""
 SERIES_PREFIX = str("")
 YOUTUBE_URL = str('')
+SECTION_ID = str('')
+SERIES_URL = str('')
 PLAYLIST = False
 CHANNEL = False
 ####[ REQUIRED VARIABLES ]####
@@ -160,7 +162,7 @@ def main():
                 os.remove(thumbnail_path)
 
                 # Rename the episode in Plex
-                PlexUpdate()
+                PlexUpdate(SECTION_ID, SERIES_URL)
                 
                 # Send an NTFY notification
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")

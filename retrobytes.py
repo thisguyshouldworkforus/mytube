@@ -13,6 +13,8 @@ LOGGER = str('retrobytes')
 OUTPUT_PATH="/opt/media/tv.docs/RetroBytes (2020) {tvdb-447483}"
 SERIES_PREFIX = str("RetroBytes (2020) - ")
 YOUTUBE_URL = str('https://www.youtube.com/@RetroBytesUK/videos')
+SECTION_ID = str('6')
+SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F38918&context=source%3Acontent.library~6~2')
 PLAYLIST = False
 CHANNEL = True
 ####[ REQUIRED VARIABLES ]####
@@ -155,7 +157,7 @@ def main():
                 os.remove(thumbnail_path)
 
                 # Rename the episode in Plex
-                PlexUpdate('6', 'http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F38918&context=source%3Acontent.library~6~2')
+                PlexUpdate(SECTION_ID, SERIES_URL)
                 
                 # Send an NTFY notification
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")

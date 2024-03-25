@@ -13,6 +13,8 @@ LOGGER = str('nbcnews')
 OUTPUT_PATH="/opt/media/tv.shows/NBC Nightly News with Lester Holt (2013) {tvdb-139911}"
 SERIES_PREFIX = str("NBC Nightly News with Lester Holt (2013) - ")
 YOUTUBE_URL = str('https://www.youtube.com/playlist?list=PL0tDb4jw6kPymVj5xNNha5PezudD5Qw9L')
+SECTION_ID = str('5')
+SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F37103&context=source%3Acontent.library~16~3')
 PLAYLIST = True
 CHANNEL = False
 ####[ REQUIRED VARIABLES ]####
@@ -167,7 +169,7 @@ def main():
                 RescanSeries(98)
 
                 # Rename the episode in Plex
-                PlexUpdate('5', 'http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F37103&context=source%3Acontent.library~16~3')
+                PlexUpdate(SECTION_ID, SERIES_URL)
                 
                 # Send an NTFY notification
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")
