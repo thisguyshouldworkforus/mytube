@@ -54,6 +54,15 @@ def main():
     # Iterate through the playlist
     for index, VIDEO in enumerate(x.video_urls, start=1):
 
+        # Limit to the first 10 items in the playlist
+        if index == 11:
+
+            # Report that we've reached the limit (minus 1, because we're halting before processing the 11th.)
+            InfoLogger(LOGGER, f"Reached the index limit ({index - 1} playlist items).")
+            break
+        else:
+            InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
+
         # Build the YouTube Object
         yt = pytubefix.YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
 
