@@ -11,7 +11,7 @@ from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, Not
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('weekendupdate')
 OUTPUT_PATH="/opt/media/tv.shows/SNL Weekend Update (1975) {tvdb-76177}"
-SERIES_PREFIX = str(f"SNL Weekend Update - ")
+SERIES_PREFIX = str("SNL Weekend Update - ")
 YOUTUBE_URL = str('https://www.youtube.com/playlist?list=PLS_gQd8UB-hJZaYQLoQJ4XowUpXXjFxaV')
 SECTION_ID = str('5')
 SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F38749&context=source%3Acontent.library~21~0')
