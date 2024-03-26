@@ -232,7 +232,7 @@ def PlexUpdate(SECTION_ID: str, SERIES_URL: str):
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'X-Plex-Token': f"'{PLEX_TOKEN}'"
+            'X-Plex-Token': f'{PLEX_TOKEN}'
         }
         rating_key_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{rating_key}/children"
 
@@ -258,7 +258,7 @@ def PlexUpdate(SECTION_ID: str, SERIES_URL: str):
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'X-Plex-Token': f"'{PLEX_TOKEN}'"
+            'X-Plex-Token': f'{PLEX_TOKEN}'
         }
 
         # Initialize the combined data structure based on the provided structure
@@ -288,7 +288,7 @@ def PlexUpdate(SECTION_ID: str, SERIES_URL: str):
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'X-Plex-Token': f"'{PLEX_TOKEN}'"
+            'X-Plex-Token': f'{PLEX_TOKEN}'
         }
 
         params = {
