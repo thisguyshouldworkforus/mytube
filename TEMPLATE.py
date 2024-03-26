@@ -10,7 +10,7 @@ from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, Not
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('')
-OUTPUT_PATH=""
+OUTPUT_PATH = str('')
 SERIES_PREFIX = str("")
 YOUTUBE_URL = str('')
 SECTION_ID = str('')
