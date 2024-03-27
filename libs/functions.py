@@ -318,6 +318,8 @@ def PlexUpdate(SECTION_ID: str, SERIES_URL: str):
         FILEPATH = episode["Media"][0]["Part"][0]["file"]
         match = pattern.search(FILEPATH)
         if match:
-            EPISODE_TITLE = match.group(1)
-            if re.match(r'^Episode.*$', episode["title"]):
+            EPISODE_TITLE = (match.group(1)).strip()
+            if EPISODE_TITLE != episode["title"]:
+            #if re.match(r'^Episode.*$', episode["title"]):
                 EpisodeUpdate(RATING_KEY, EPISODE_TITLE)
+                #print(f"File Title: '{EPISODE_TITLE}'\nMetadata Title: '{episode['title']}'")
