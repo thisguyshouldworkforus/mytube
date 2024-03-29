@@ -78,13 +78,23 @@ def main():
         TITLE = str(yt.title).strip()
         PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
         HISTORY_PATH = "/opt/projects/mytube/history"
-
         OUTPUT_FILENAME = NewsFileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}", f"{TITLE}")
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
+        
         # Check if the history file exists, and if not, create it
         if not os.path.exists(HISTORY_LOG):
             with open(HISTORY_LOG, "w") as f:
                 f.write(f"### {LOGGER} log ###\n")
+
+        FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
+
+        if os.path.exists(FINAL_OUTPUT):
+            InfoLogger(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!")
+            if (not(CheckHistory(HISTORY_LOG, VIDEO))):
+                WriteHistory(HISTORY_LOG, VIDEO)
+                continue
+            else:
+                continue
 
         ## Only capture videos from a specific date range
         #if not(yt.publish_date.year >= 2024):
@@ -127,9 +137,7 @@ def main():
                         os.remove(input_audio)
                     WriteHistory(HISTORY_LOG, VIDEO)
                     continue
-
-            FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
-
+                
             # Check to make sure the audio and video files exist
             if not (os.path.exists(input_audio) or (os.path.exists(input_video))):
                 InfoLogger(LOGGER, f"Required media does not exist.")
@@ -161,7 +169,7 @@ def main():
                     '-b:a', '128k',
                     FINAL_OUTPUT
                 ]
-
+                
             # If an entry for the video ID does not yet exist in the history file, then download it.
             OUTPUT = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
 

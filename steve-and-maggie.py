@@ -77,6 +77,16 @@ def main():
             with open(HISTORY_LOG, "w") as f:
                 f.write(f"### {LOGGER} log ###\n")
 
+        FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
+
+        if os.path.exists(FINAL_OUTPUT):
+            InfoLogger(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!")
+            if (not(CheckHistory(HISTORY_LOG, VIDEO))):
+                WriteHistory(HISTORY_LOG, VIDEO)
+                continue
+            else:
+                continue
+
         ## Only capture videos from a specific date range
         #if not(yt.publish_date.year >= 2024):
         #    InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
@@ -118,8 +128,6 @@ def main():
                         os.remove(input_audio)
                     WriteHistory(HISTORY_LOG, VIDEO)
                     continue
-
-            FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
 
             # Check to make sure the audio and video files exist
             if not (os.path.exists(input_audio) or (os.path.exists(input_video))):
