@@ -2,6 +2,7 @@
 
 # Import Modules
 import os
+import socket
 import subprocess
 import sys
 import pytubefix
@@ -18,6 +19,9 @@ SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/
 PLAYLIST = True
 CHANNEL = False
 ####[ REQUIRED VARIABLES ]####
+
+# Get the hostname, for later
+THISBOX = socket.gethostname()
 
 # Define a lockfile, so we can increase
 # the run scheduled without running over ourselves
@@ -122,18 +126,32 @@ def main():
                 InfoLogger(LOGGER, f"Required media does not exist.")
                 continue
 
-            # Command to mux video and audio
-            command = [
-                "/usr/bin/ffmpeg",
-                "-i", input_audio,
-                "-i", input_video,
-                '-c:v', 'libx264',
-                '-preset', 'medium',
-                '-c:a', 'aac',
-                '-strict', 'experimental',
-                '-b:a', '128k',
-                FINAL_OUTPUT
-            ]
+            # Command to mux video and audio will differ, depending on the hostname
+            if THISBOX == "dev":
+                command = [
+                    "/usr/bin/ffmpeg",
+                    "-i", input_audio,
+                    "-i", input_video,
+                    '-c:v', 'libx264',
+                    '-preset', 'medium',
+                    '-c:a', 'aac',
+                    '-strict', 'experimental',
+                    '-b:a', '128k',
+                    FINAL_OUTPUT
+                ]
+            elif THISBOX == "plex":
+                command = [
+                    "/usr/bin/ffmpeg",
+                    '-hwaccel', 'cuda',
+                    "-i", input_audio,
+                    "-i", input_video,
+                    '-c:v', 'h264_nvenc',
+                    '-preset', 'medium',
+                    '-c:a', 'aac',
+                    '-strict', 'experimental',
+                    '-b:a', '128k',
+                    FINAL_OUTPUT
+                ]
 
             # If an entry for the video ID does not yet exist in the history file, then download it.
             OUTPUT = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
