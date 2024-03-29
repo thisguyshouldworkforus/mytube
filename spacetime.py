@@ -6,7 +6,7 @@ import subprocess
 import sys
 import pytubefix
 import pytubefix.helpers
-from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory, PlexUpdate
+from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory, PlexLibraryUpdate, RefreshPlex
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('spacetime')
@@ -54,15 +54,6 @@ def main():
     # Iterate through the playlist
     for index, VIDEO in enumerate(x.video_urls, start=1):
 
-        # Limit to the first 10 items in the playlist
-        if index == 11:
-
-            # Report that we've reached the limit (minus 1, because we're halting before processing the 11th.)
-            InfoLogger(LOGGER, f"Reached the index limit ({index - 1} playlist items).")
-            break
-        else:
-            InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
-
         # Build the YouTube Object
         yt = pytubefix.YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
 
@@ -71,7 +62,7 @@ def main():
 
         # Set the video ID, title, and publish date
         ID = str(yt.video_id)
-        TITLE = str(yt.title)
+        TITLE = str(yt.title).strip()
         PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
         HISTORY_PATH = "/opt/projects/mytube/history"
 
@@ -91,13 +82,10 @@ def main():
         # Video is NOT in the history file
         if (not(CheckHistory(HISTORY_LOG, VIDEO))):
 
-            InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: '{TITLE}' ({ID}) was NOT in history, and will be downloaded.")
+            InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) was NOT in history, and will be downloaded.")
 
-            # Construct FFMPEG objects            
-            # Download the thumbnail image
-            thumbnail = yt.thumbnail_url
-            thumbnail_path = f"{TEMP_DIR}/{PUBLISH_DATE}.thumbnail.jpg"
-            subprocess.run(['wget', '-O', thumbnail_path, thumbnail], check=True)
+            # Construct FFMPEG objects
+            THUMBNAIL_URL = yt.thumbnail_url
 
             # Download the audio stream, try 160kbps, if that fails, try 128kbps. If that fails, skip it.
             try:
@@ -106,14 +94,13 @@ def main():
                 try:
                     input_audio = yt.streams.filter(adaptive=True, mime_type="audio/webm", abr="128kbps").first().download(f"{TEMP_DIR}",f"{PUBLISH_DATE}.audio.webm")
                 except Exception:
-                    InfoLogger(LOGGER, f"There was an error downloading the audio stream for '{TITLE}' ({ID})")
-                    NotifyMe('Error!','5','face_with_spiral_eyes',f"There was an error downloading the audio stream for '{TITLE}' ({ID})")
-                    if os.path.exists(thumbnail_path):
-                        os.remove(thumbnail_path)
+                    InfoLogger(LOGGER, f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})")
+                    NotifyMe('Error!','5','face_with_spiral_eyes',f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})")
                     if os.path.exists(input_audio):
                         os.remove(input_audio)
                     WriteHistory(HISTORY_LOG, VIDEO)
                     continue
+
             # Download the video stream, try 1080p, if that fails, try 720p. If that fails, skip it.
             try:
                 input_video = yt.streams.filter(adaptive=True, mime_type="video/webm",res="1080p").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.video.webm")
@@ -121,31 +108,31 @@ def main():
                 try:
                     input_video = yt.streams.filter(adaptive=True, mime_type="video/webm",res="720p").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.video.webm")
                 except Exception:
-                    InfoLogger(LOGGER, f"There was an error downloading the video stream for '{TITLE}' ({ID})")
-                    NotifyMe('Error!','5','face_with_spiral_eyes',f"There was an error downloading the video stream for '{TITLE}' ({ID})")
-                    if os.path.exists(thumbnail_path):
-                        os.remove(thumbnail_path)
+                    InfoLogger(LOGGER, f"There was an error downloading the video stream for \"{TITLE}\" ({ID})")
+                    NotifyMe('Error!','5','face_with_spiral_eyes',f"There was an error downloading the video stream for \"{TITLE}\" ({ID})")
                     if os.path.exists(input_audio):
                         os.remove(input_audio)
                     WriteHistory(HISTORY_LOG, VIDEO)
                     continue
-            
-            final_output = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
+
+            FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
+
+            # Check to make sure the audio and video files exist
+            if not (os.path.exists(input_audio) or (os.path.exists(input_video))):
+                InfoLogger(LOGGER, f"Required media does not exist.")
+                continue
 
             # Command to mux video and audio
             command = [
                 "/usr/bin/ffmpeg",
                 "-i", input_audio,
                 "-i", input_video,
-                "-attach", thumbnail_path,
-                "-metadata:s:t", "mimetype=image/jpeg",
-                "-metadata:s:t", "filename=cover.jpg",
                 '-c:v', 'libx264',
                 '-preset', 'medium',
                 '-c:a', 'aac',
                 '-strict', 'experimental',
                 '-b:a', '128k',
-                final_output
+                FINAL_OUTPUT
             ]
 
             # If an entry for the video ID does not yet exist in the history file, then download it.
@@ -155,7 +142,7 @@ def main():
             if OUTPUT.returncode == 0:
 
                 # Log the success
-                InfoLogger(LOGGER, f"Downloaded '{TITLE}'")
+                InfoLogger(LOGGER, f"Downloaded \"{TITLE}\"")
 
                 # Update the history file
                 WriteHistory(HISTORY_LOG, VIDEO)
@@ -163,10 +150,12 @@ def main():
                 # Clean up our mess
                 os.remove(input_audio)
                 os.remove(input_video)
-                os.remove(thumbnail_path)
 
-                # Rename the episode in Plex
-                PlexUpdate(SECTION_ID, SERIES_URL)
+                # Refresh the library
+                RefreshPlex(SECTION_ID)
+
+                # Update the Plex Library
+                PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL)
                 
                 # Send an NTFY notification
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")
@@ -180,14 +169,13 @@ def main():
                 # Clean up our mess
                 os.remove(input_audio)
                 os.remove(input_video)
-                os.remove(thumbnail_path)
-                os.remove(final_output)
+                os.remove(FINAL_OUTPUT)
 
                 # Remove the lock file when the script finishes
                 sys.exit(1)
 
         else: # Video IS in the history file
-            InfoLogger(LOGGER, f"{ID} ('{TITLE}') WAS in history, and will be disgarded.")
+            InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) WAS in history, and will be disgarded.")
             continue
 
     # Remove the lock file when the script finishes
