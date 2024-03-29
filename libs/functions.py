@@ -7,9 +7,13 @@ import re
 import requests
 import datetime
 import os
+import time
+
+with open('/opt/projects/mytube/credentials/plex.token', 'r') as f:
+    PLEX_TOKEN = f.readline().strip()
 
 def InfoLogger(LOG: str = None, message: str =None):
-    log_directory = '/opt/projects/mytube/logs/'
+    log_directory = '/opt/projects/mytube/logs'
     os.makedirs(log_directory, exist_ok=True)
 
     TODAY = datetime.datetime.now().strftime("%Y%m%d")
@@ -18,7 +22,7 @@ def InfoLogger(LOG: str = None, message: str =None):
     if not logger.hasHandlers():
         logger.setLevel(logging.INFO)
         formatter = logging.Formatter('%(asctime)s:%(levelname)s' + ' ::: ' + '%(message)s')
-        file_handler = logging.FileHandler(f'{log_directory}{LOG}.{TODAY}.log', mode='a', encoding='utf-8')
+        file_handler = logging.FileHandler(f'{log_directory}/{LOG}.log', mode='a', encoding='utf-8')
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
@@ -39,14 +43,13 @@ def CheckProcess(pidfile):
 
 def CheckHistory(FILE: str = None, URL: str = None):
     # Regular expression pattern to capture YouTube video ID
-    pattern = re.compile(r'v=([-\w]+)')
+    pattern = re.compile(r'[?&]v=([-_\w]+)')
     
     # Search for the pattern in the URL
     match = pattern.search(URL)
-
     if match:
-        # Update the global HISTORY_ID variable
-        HISTORY_ID = match.group(1)
+        # Use a local variable for the video ID
+        video_id = match.group(1)
     else:
         # Raise a more specific exception with a message
         raise ValueError("Invalid URL: No YouTube video ID found.")
@@ -55,16 +58,12 @@ def CheckHistory(FILE: str = None, URL: str = None):
     
     # Read the history file and check if the ID is already present
     with open(history_file_path, "r") as history_file:
+        # This pattern ensures the whole line matches "youtube <video_id>"
+        id_pattern = re.compile(r'^youtube ' + re.escape(video_id) + r'$', re.MULTILINE)
+        
         history_content = history_file.read()
-        
-        # Construct regex pattern to search for the ID
-        pattern = re.compile(r'\b' + re.escape(HISTORY_ID) + r'\b')
-        
         # Check if ID is in file
-        if pattern.search(history_content):
-            return True
-        else:
-            return False
+        return bool(id_pattern.search(history_content))
 
 def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None):
 
@@ -180,7 +179,6 @@ def WriteHistory(FILE: str = None, URL: str = None):
     # Read the history file and check if the ID is already present
     with open(history_file_path, "a") as history_file:
         history_file.write(f"youtube {HISTORY_ID}\n")
-    print(f"ID {HISTORY_ID} added to history.")
 
 def RescanSeries(SERIES_ID):
     # Get API Key
@@ -214,112 +212,205 @@ def RescanSeries(SERIES_ID):
     except Exception as e:
         print(f"There was an error!\n{e}")
 
-def PlexUpdate(SECTION_ID: str, SERIES_URL: str):
-    import re
-    import requests
+def GetRatingKeys(url: str):
+    # Correct the regular expression for extracting the rating key from the URL.
+    match = re.search(r'key=%2Flibrary%2Fmetadata%2F(\d+)', url)
+    if match:
+        rating_key = match.group(1)
+    else:
+        return "Rating key not found in URL"
 
-    with open('/opt/projects/mytube/credentials/plex.token', 'r') as f:
-        PLEX_TOKEN = f.readline().strip()
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Plex-Token': f'{PLEX_TOKEN}'
+    }
+    rating_key_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{rating_key}/children"
 
-    def GetRatingKeys(url: str):
-        # Correct the regular expression for extracting the rating key from the URL.
-        match = re.search(r'key=%2Flibrary%2Fmetadata%2F(\d+)', url)
-        if match:
-            rating_key = match.group(1)
-        else:
-            return "Rating key not found in URL"
+    response = requests.get(url=rating_key_url, headers=headers)
+    data = response.json()
 
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-Plex-Token': f'{PLEX_TOKEN}'
+    rating_keys = []  # Initialize an empty list for rating keys
+
+    # Check if 'Metadata' exists to avoid KeyError
+    if "Metadata" in data["MediaContainer"]:
+        # Iterate over the items in the response and collect their rating keys
+        for item in data["MediaContainer"]["Metadata"]:
+            # Append each rating key to the list
+            rating_keys.append(item["ratingKey"])
+
+    # If no rating keys were found, you could choose to return a message or an empty list
+    if not rating_keys:
+        return "No rating keys found"
+
+    return rating_keys  # Return the list of rating keys
+
+def GetSeriesData(rating_keys: list) -> str:
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Plex-Token': f'{PLEX_TOKEN}'
+    }
+
+    # Initialize the combined data structure based on the provided structure
+    combined_data = {
+        "MediaContainer": {
+            # Include necessary top-level fields here, adjust as necessary
+            "size": 0,  # Will be updated with the count of all Metadata items
+            "Metadata": []  # This list will be populated with metadata from each rating key
         }
-        rating_key_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{rating_key}/children"
+    }
 
-        response = requests.get(url=rating_key_url, headers=headers)
+    for key in rating_keys:
+        series_data_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{key}/children"
+        response = requests.get(url=series_data_url, headers=headers)
         data = response.json()
 
-        rating_keys = []  # Initialize an empty list for rating keys
+        if "MediaContainer" in data and "Metadata" in data["MediaContainer"]:
+            # Extend the combined Metadata list with metadata from this rating key
+            combined_data["MediaContainer"]["Metadata"].extend(data["MediaContainer"]["Metadata"])
 
-        # Check if 'Metadata' exists to avoid KeyError
-        if "Metadata" in data["MediaContainer"]:
-            # Iterate over the items in the response and collect their rating keys
-            for item in data["MediaContainer"]["Metadata"]:
-                # Append each rating key to the list
-                rating_keys.append(item["ratingKey"])
+    # Update the size to reflect the total number of Metadata items
+    combined_data["MediaContainer"]["size"] = len(combined_data["MediaContainer"]["Metadata"])
 
-        # If no rating keys were found, you could choose to return a message or an empty list
-        if not rating_keys:
-            return "No rating keys found"
+    return combined_data  # Return the combined data structure
 
-        return rating_keys  # Return the list of rating keys
+def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str):
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Plex-Token': f'{PLEX_TOKEN}'
+    }
 
-    def GetSeriesData(rating_keys: list) -> str:
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-Plex-Token': f'{PLEX_TOKEN}'
-        }
+    episode_params = {
+        'type': '4',
+        'id': f'{rating_key}', # This is the ratingId of the episode
+        'includeExternalMedia': '1',
+        'title.value': f'{episode_title}',
+        'titleSort.value': f'{episode_title}'
+    }
 
-        # Initialize the combined data structure based on the provided structure
-        combined_data = {
-            "MediaContainer": {
-                # Include necessary top-level fields here, adjust as necessary
-                "size": 0,  # Will be updated with the count of all Metadata items
-                "Metadata": []  # This list will be populated with metadata from each rating key
-            }
-        }
+    episode_update_url = f"http://plex.int.snyderfamily.co:32400/library/sections/{section_id}/all"
+    episode_response = requests.put(url=episode_update_url, headers=headers, params=episode_params)
 
-        for key in rating_keys:
-            series_data_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{key}/children"
-            response = requests.get(url=series_data_url, headers=headers)
-            data = response.json()
+    if episode_response.status_code == 200:
+        print(f"Episode {rating_key} (\"{episode_title}\") updated successfully")
+    else:
+        print(f"Episode {rating_key} (\"{episode_title}\") failed to update")
 
-            if "MediaContainer" in data and "Metadata" in data["MediaContainer"]:
-                # Extend the combined Metadata list with metadata from this rating key
-                combined_data["MediaContainer"]["Metadata"].extend(data["MediaContainer"]["Metadata"])
+# def PlexUpdate(section_id: str, SERIES_URL: str):
+#     # Call the function and store the result in a variable
+#     series_data = GetSeriesData(GetRatingKeys(SERIES_URL))
+    
+#     for episode in series_data["MediaContainer"]["Metadata"]:
+    
+#         # Search for a pattern
+#         pattern = re.compile(r'^.*? - .*? - (.*)(?:\s*\(\d{4}-\d{2}-\d{2}\))\.mkv$|\.mp4$')
+    
+#         RATING_KEY = episode["ratingKey"]
+#         FILEPATH = episode["Media"][0]["Part"][0]["file"]
+#         match = pattern.search(FILEPATH)
+#         if match:
+#             EPISODE_TITLE = (match.group(1)).strip()
+#             if EPISODE_TITLE != episode["title"]:
+#             #if re.match(r'^Episode.*$', episode["title"]):
+#                 EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id)
+#                 #print(f"File Title: '{EPISODE_TITLE}'\nMetadata Title: '{episode['title']}'")
 
-        # Update the size to reflect the total number of Metadata items
-        combined_data["MediaContainer"]["size"] = len(combined_data["MediaContainer"]["Metadata"])
+# def PosterUpdate(target_file_path: str, thumbnail_url: str, SERIES_URL: str):
+#     def find_rating_key_by_file_path(series_data, target_file_path):
+#         for episode in series_data["MediaContainer"]["Metadata"]:
+#             file_path = episode["Media"][0]["Part"][0]["file"]
+#             # Check if the current episode's file path matches the target file path
+#             if file_path == target_file_path:
+#                 return episode["ratingKey"]
+#         # Return None if no match is found
+#         return None
+    
+#     # Example usage
+#     series_data = GetSeriesData(GetRatingKeys(SERIES_URL))
+#     rating_key = find_rating_key_by_file_path(series_data, target_file_path)
+    
+#     for episode in series_data["MediaContainer"]["Metadata"]:
+#         file_path = episode["Media"][0]["Part"][0]["file"]
+#         # Check if the current episode's file path matches the target file path
+#         if file_path == target_file_path:
+#             episode_title = episode["title"]
+#             break
 
-        return combined_data  # Return the combined data structure
+#     headers = {
+#         'Accept': 'application/json',
+#         'Content-Type': 'application/json',
+#         'X-Plex-Token': f'{PLEX_TOKEN}'
+#     }
+    
+#     poster_params = {
+#         'url': f'{thumbnail_url}'
+#     }
+    
+#     poster_update_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{rating_key}/posters"
+#     poster_response = requests.post(url=poster_update_url, headers=headers, params=poster_params)
+    
+#     if poster_response.status_code == 200:
+#         print(f"Poster for episode {rating_key} (\"{episode_title}\") updated successfully")
+#     else:
+#         print(f"Poster for episode {rating_key} (\"{episode_title}\") failed to update")
 
-    def EpisodeUpdate(rating_key: str, episode_title: str):
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-Plex-Token': f'{PLEX_TOKEN}'
-        }
+def RefreshPlex(section_id: str):
+    headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{PLEX_TOKEN}'}
+    url = f"http://plex.int.snyderfamily.co:32400/library/sections/{section_id}/refresh"
+    payload = {}
+    response = requests.request("GET", url, headers=headers, data=payload)
 
-        params = {
-            'type': '4',
-            'id': f'{rating_key}', # This is the ratingId of the episode
-            'includeExternalMedia': '1',
-            'title.value': f'{episode_title}',
-            'titleSort.value': f'{episode_title}'
-        }
+    # Update Libraries for readability
+    if section_id == '1':
+        section_name = "Movies"
+    elif section_id == '2':
+        section_name = "Documentaries"
+    elif section_id == '3':
+        section_name = "Hallmark"
+    elif section_id == '4':
+        section_name = "Disney"
+    elif section_id == '5':
+        section_name = "TV Shows"
+    elif section_id == '6':
+        section_name = "TV Docs"
+    elif section_id == '7':
+        section_name = "TV Kids"
+    elif section_id == '8':
+        section_name = "Music"
 
-        episode_update_url = f"http://plex.int.snyderfamily.co:32400/library/sections/{SECTION_ID}/all"
-        response = requests.put(url=episode_update_url, headers=headers, params=params)
-        if response.status_code == 200:
-            print(f"Episode {rating_key} ('{episode_title}') updated successfully")
-        else:
-            print(f"Episode {rating_key} ('{episode_title}') failed to update")
+    if response.status_code == 200:
+        print(f"Plex Library Section '{section_name}' refreshed successfully")
+        time.sleep(5) # Wait 5 seconds before continuing
+    else:
+        print(f"Plex Library Section '{section_name}' failed to refresh")
+        print(response.text)
 
-    # Call the function and store the result in a variable
+def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = None, thumbnail_url: str = None):
     series_data = GetSeriesData(GetRatingKeys(SERIES_URL))
-
+    
     for episode in series_data["MediaContainer"]["Metadata"]:
-
-        # Search for a pattern
-        pattern = re.compile(r'^.*? - .*? - (.*)(?:\s*\(\d{4}-\d{2}-\d{2}\))\.mkv$|\.mp4$')
-
         RATING_KEY = episode["ratingKey"]
         FILEPATH = episode["Media"][0]["Part"][0]["file"]
+        
+        # Check and update episode metadata based on file name pattern
+        pattern = re.compile(r'^.*? - .*? - (.*)(?:\s*\(\d{4}-\d{2}-\d{2}\))\.mkv$|\.mp4$')
         match = pattern.search(FILEPATH)
         if match:
             EPISODE_TITLE = (match.group(1)).strip()
             if EPISODE_TITLE != episode["title"]:
-            #if re.match(r'^Episode.*$', episode["title"]):
-                EpisodeUpdate(RATING_KEY, EPISODE_TITLE)
-                #print(f"File Title: '{EPISODE_TITLE}'\nMetadata Title: '{episode['title']}'")
+                EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id)
+                print(f"Metadata for episode {RATING_KEY} (\"{EPISODE_TITLE}\") updated successfully")
+        
+        # Update poster if target_file_path matches or if it's a general update
+        if thumbnail_url and (not target_file_path or FILEPATH == target_file_path):
+            poster_update_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{RATING_KEY}/posters"
+            headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{PLEX_TOKEN}'}
+            poster_params = {'url': f'{thumbnail_url}'}
+            poster_response = requests.post(url=poster_update_url, headers=headers, params=poster_params)
+            
+            if poster_response.status_code == 200:
+                print(f"Poster for episode {RATING_KEY} (\"{episode['title']}\") updated successfully")
+            else:
+                print(f"Poster for episode {RATING_KEY} (\"{episode['title']}\") failed to update")
