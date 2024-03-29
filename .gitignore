@@ -18,6 +18,3 @@ downloads/
 
 # Ignore history
 history/
-
-# Ignore yt-dlp
-yt-dlp/
