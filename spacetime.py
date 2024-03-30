@@ -153,11 +153,10 @@ def main():
                     '-hwaccel', 'cuda',
                     "-i", input_audio,
                     "-i", input_video,
-                    '-c:v', 'h264_nvenc',
+                    '-c:v', 'h265_nvenc',
                     '-preset', 'medium',
                     '-c:a', 'aac',
                     '-strict', 'experimental',
-                    '-b:a', '128k',
                     FINAL_OUTPUT
                 ]
                 
