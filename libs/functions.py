@@ -9,7 +9,7 @@ import datetime
 import os
 import time
 
-with open('/opt/projects/mytube/credentials/plex.token', 'r') as f:
+with open("${HOME}/.config/.credentials/plex.token", 'r') as f:
     PLEX_TOKEN = f.readline().strip()
 
 def InfoLogger(LOG: str = None, message: str =None):
@@ -126,7 +126,7 @@ def NotifyMe(title: str = 'New Message', priority: str = 3, tags: str = 'incomin
     ## a troll will start sending me bullshit and ruin my day.
 
     # Open the file for reading ('r' mode)
-    with open('/opt/projects/mytube/credentials/ntfy.url', 'r') as file:
+    with open("${HOME}/.config/.credentials/ntfy.url", 'r') as file:
         # Read the first line of the file
         NTFY_URL = file.readline().strip()  # strip() removes any leading/trailing whitespace
 
@@ -183,7 +183,7 @@ def WriteHistory(FILE: str = None, URL: str = None):
 def RescanSeries(SERIES_ID):
     # Get API Key
     # Open the file for reading ('r' mode)
-    with open('/opt/projects/mytube/credentials/sonarr.api', 'r') as file:
+    with open("${HOME}/.config/.credentials/sonarr.api", 'r') as file:
         # Read the first line of the file
         API_KEY = file.readline().strip()  # strip() removes any leading/trailing whitespace
 
