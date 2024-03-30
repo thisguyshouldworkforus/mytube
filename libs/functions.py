@@ -9,7 +9,8 @@ import datetime
 import os
 import time
 
-with open("${HOME}/.config/.credentials/plex.token", 'r') as f:
+TOKEN_PATH = os.path.join(os.environ['HOME'], '.config', '.credentials', 'plex.token')
+with open(TOKEN_PATH, 'r') as f:
     PLEX_TOKEN = f.readline().strip()
 
 def InfoLogger(LOG: str = None, message: str =None):
@@ -126,7 +127,8 @@ def NotifyMe(title: str = 'New Message', priority: str = 3, tags: str = 'incomin
     ## a troll will start sending me bullshit and ruin my day.
 
     # Open the file for reading ('r' mode)
-    with open("${HOME}/.config/.credentials/ntfy.url", 'r') as file:
+    NTFY_PATH = os.path.join(os.environ['HOME'], '.config', '.credentials', 'ntfy.url')
+    with open(NTFY_PATH, 'r') as file:
         # Read the first line of the file
         NTFY_URL = file.readline().strip()  # strip() removes any leading/trailing whitespace
 
@@ -183,7 +185,8 @@ def WriteHistory(FILE: str = None, URL: str = None):
 def RescanSeries(SERIES_ID):
     # Get API Key
     # Open the file for reading ('r' mode)
-    with open("${HOME}/.config/.credentials/sonarr.api", 'r') as file:
+    SONARR_PATH = os.path.join(os.environ['HOME'], '.config', '.credentials', 'sonarr.api')
+    with open(SONARR_PATH, 'r') as file:
         # Read the first line of the file
         API_KEY = file.readline().strip()  # strip() removes any leading/trailing whitespace
 
