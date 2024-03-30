@@ -11,7 +11,7 @@ from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, Not
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('trek')
-OUTPUT_PATH = str('/opt/media/tv.shows/Trek, Actually (2016) {tvdb-000000}')
+OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.shows/Trek, Actually (2016) {tvdb-000000}'))
 SERIES_PREFIX = str('Trek, Actually (2016) - ')
 YOUTUBE_URL = str('https://www.youtube.com/watch?v=09TySF0FN6Y&list=PL0-LSnSBNInfrr7MDRuXmfk1LJ_KjvaXt&pp=iAQB')
 SECTION_ID = str('5')

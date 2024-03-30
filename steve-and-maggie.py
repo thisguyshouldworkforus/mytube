@@ -11,7 +11,7 @@ from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, Not
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('sam')
-OUTPUT_PATH = str('/opt/media/tv.kids/Steve & Maggie (2014) {tvdb-xxxxxx}')
+OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.kids/Steve & Maggie (2014) {tvdb-xxxxxx}'))
 SERIES_PREFIX = str('Steve & Maggie (2014) - ')
 YOUTUBE_URL = str('https://www.youtube.com/@Steve_and_Maggie/videos')
 SECTION_ID = str('7')

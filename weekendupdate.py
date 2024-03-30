@@ -11,7 +11,7 @@ from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, Not
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('weekendupdate')
-OUTPUT_PATH="/opt/media/tv.shows/SNL Weekend Update (1975) {tvdb-76177}"
+OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.shows/SNL Weekend Update (1975) {tvdb-76177}'))
 SERIES_PREFIX = str("SNL Weekend Update - ")
 YOUTUBE_URL = str('https://www.youtube.com/playlist?list=PLS_gQd8UB-hJZaYQLoQJ4XowUpXXjFxaV')
 SECTION_ID = str('5')

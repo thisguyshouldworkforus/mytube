@@ -11,7 +11,7 @@ from libs.functions import CheckHistory, CheckProcess, NewsFileName, InfoLogger,
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('nbcnews')
-OUTPUT_PATH="/opt/media/tv.shows/NBC Nightly News with Lester Holt (2013) {tvdb-139911}"
+OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.shows/NBC Nightly News with Lester Holt (2013) {tvdb-139911}'))
 SERIES_PREFIX = str("NBC Nightly News with Lester Holt (2013) - ")
 YOUTUBE_URL = str('https://www.youtube.com/playlist?list=PL0tDb4jw6kPymVj5xNNha5PezudD5Qw9L')
 SECTION_ID = str('5')

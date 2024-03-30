@@ -11,7 +11,7 @@ from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, Not
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('retrobytes')
-OUTPUT_PATH="/opt/media/tv.docs/RetroBytes (2020) {tvdb-447483}"
+OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.docs/RetroBytes (2020) {tvdb-447483}'))
 SERIES_PREFIX = str("RetroBytes (2020) - ")
 YOUTUBE_URL = str('https://www.youtube.com/@RetroBytesUK/videos')
 SECTION_ID = str('6')

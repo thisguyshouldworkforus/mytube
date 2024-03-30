@@ -11,7 +11,7 @@ from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, Not
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('spacetime')
-OUTPUT_PATH="/opt/media/tv.docs/PBS Space Time (2015) {tvdb-320016}"
+OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.docs/PBS Space Time (2015) {tvdb-320016}'))
 SERIES_PREFIX = str("PBS Space Time (2015) - ")
 YOUTUBE_URL = str('https://www.youtube.com/@pbsspacetime/videos')
 SECTION_ID = str('6')

@@ -11,7 +11,7 @@ from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, Not
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('dannygo')
-OUTPUT_PATH="/opt/media/tv.kids/Danny Go! (2019) {tvdb-437666}"
+OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.kids/Danny Go! (2019) {tvdb-437666}'))
 SERIES_PREFIX = str("Danny Go! (2019) - ")
 YOUTUBE_URL = str('https://www.youtube.com/@DannyGo/videos')
 SECTION_ID = str('7')

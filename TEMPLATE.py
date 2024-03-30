@@ -11,7 +11,7 @@ from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, Not
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('')
-OUTPUT_PATH = str('')
+OUTPUT_PATH = str(pytubefix.helpers.target_directory(''))
 SERIES_PREFIX = str('')
 YOUTUBE_URL = str('')
 SECTION_ID = str('')

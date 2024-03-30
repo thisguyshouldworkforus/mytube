@@ -11,7 +11,7 @@ from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, Not
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('hot-universe')
-OUTPUT_PATH="/opt/media/tv.docs/The Entire History of the Universe (2021) {tvdb-428626}"
+OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.docs/The Entire History of the Universe (2021) {tvdb-428626}'))
 SERIES_PREFIX = str("The Entire History of the Universe (2021) - ")
 YOUTUBE_URL = str('https://www.youtube.com/@HistoryoftheUniverse/videos')
 SECTION_ID = str('6')
