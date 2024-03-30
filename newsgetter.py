@@ -78,7 +78,7 @@ def main():
         TITLE = str(yt.title).strip()
         PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
         HISTORY_PATH = "/opt/projects/mytube/history"
-        OUTPUT_FILENAME = NewsFileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}", f"{TITLE}")
+        OUTPUT_FILENAME = NewsFileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}")
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
         
         # Check if the history file exists, and if not, create it
