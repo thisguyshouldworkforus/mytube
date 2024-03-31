@@ -67,7 +67,6 @@ def CheckHistory(FILE: str = None, URL: str = None):
         return bool(id_pattern.search(history_content))
 
 def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None):
-
     # Parse the PUBLISH_DATE to a datetime object
     publish_date = datetime.datetime.strptime(PUBLISH_DATE, "%Y-%m-%d")
 
@@ -77,13 +76,14 @@ def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None):
     day = publish_date.day
     day_of_week = publish_date.strftime("%a")
 
-    # This is to fix a discrepency between how Linux (date) and Sonarr writes the day "Thursday"
-    if day_of_week == "Thu":
-        day_of_week = "Thur"
-
     # Calculate the day of the year (episode number)
-    # Minus one day, because there was no episode on Saturday, January 13th.
-    day_of_year = publish_date.timetuple().tm_yday - 1
+    day_of_year = publish_date.timetuple().tm_yday
+
+    # Check if the publish_date is after January 13th
+    jan_13 = datetime.datetime(year, 1, 13)
+    if publish_date > jan_13:
+        # Minus one day, because there was no episode on Saturday, January 13th.
+        day_of_year -= 1
 
     # Construct the filename
     filename = f"{SERIES_PREFIX}S{year}E{day_of_year} - {month_abbr} {day} {day_of_week} ({PUBLISH_DATE}).mkv"
