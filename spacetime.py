@@ -64,7 +64,7 @@ def main():
         yt = pytubefix.YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
 
         # Set the temporary directory
-        TEMP_DIR = str(pytubefix.helpers.target_directory('/opt/projects/mytube/downloads'))
+        TEMP_DIR = str(pytubefix.helpers.target_directory(f'/opt/projects/mytube/downloads/{LOGGER}'))
 
         # Set the video ID, title, and publish date
         ID = str(yt.video_id)
