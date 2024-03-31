@@ -52,11 +52,13 @@ def main():
         # Create a playlist object
         x = pytubefix.Playlist(YOUTUBE_URL)
     elif CHANNEL:
-        # Create a channel object
+        # Create a channel 
         x = pytubefix.Channel(YOUTUBE_URL)
 
     # Iterate through the playlist
-    for index, VIDEO in enumerate(x.video_urls, start=1):
+    for index, VID in enumerate(x.videos, start=1):
+
+        VIDEO = VID.watch_url
 
         # Build the YouTube Object
         yt = pytubefix.YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
@@ -153,7 +155,7 @@ def main():
                     '-hwaccel', 'cuda',
                     "-i", input_audio,
                     "-i", input_video,
-                    '-c:v', 'h265_nvenc',
+                    '-c:v', 'hevc_nvenc',
                     '-preset', 'medium',
                     '-c:a', 'aac',
                     '-strict', 'experimental',
