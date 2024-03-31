@@ -117,8 +117,6 @@ def main():
                 except Exception:
                     InfoLogger(LOGGER, f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})")
                     NotifyMe('Error!','5','face_with_spiral_eyes',f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})")
-                    if os.path.exists(input_audio):
-                        os.remove(input_audio)
                     WriteHistory(HISTORY_LOG, VIDEO)
                     continue
 

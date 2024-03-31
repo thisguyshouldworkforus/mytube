@@ -91,7 +91,7 @@ def main():
 
         ## Only capture videos from a specific date range
         if not(yt.publish_date.year >= 2016):
-            InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
+            InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published on {yt.publish_date.year} which is before 2016, and will be disgarded.")
             WriteHistory(HISTORY_LOG, VIDEO)
             continue
 
@@ -112,8 +112,6 @@ def main():
                 except Exception:
                     InfoLogger(LOGGER, f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})")
                     NotifyMe('Error!','5','face_with_spiral_eyes',f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})")
-                    if os.path.exists(input_audio):
-                        os.remove(input_audio)
                     WriteHistory(HISTORY_LOG, VIDEO)
                     continue
 
