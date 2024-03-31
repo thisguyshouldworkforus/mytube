@@ -7,7 +7,7 @@ import subprocess
 import sys
 import pytubefix
 import pytubefix.helpers
-from libs.functions import CheckHistory, CheckProcess, NewsFileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory, PlexLibraryUpdate, RefreshPlex
+from libs.functions import CheckHistory, CheckProcess, NewsFileName, InfoLogger, NotifyMe, WriteHistory, PlexLibraryUpdate, RefreshPlex
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('nbcnews')
@@ -56,17 +56,19 @@ def main():
         x = pytubefix.Channel(YOUTUBE_URL)
 
     # Iterate through the playlist
-    for index, VIDEO in enumerate(x.video_urls, start=1):
-        
+    for index, VID in enumerate(x.videos, start=1):
+
         # Limit to the first 10 items in the playlist
         if index == 11:
-
+            
             # Report that we've reached the limit (minus 1, because we're halting before processing the 11th.)
             InfoLogger(LOGGER, f"Reached the index limit ({index - 1} playlist items).")
             break
         else:
             InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
         
+        VIDEO = VID.watch_url
+
         # Build the YouTube Object
         yt = pytubefix.YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
 
@@ -96,11 +98,11 @@ def main():
             else:
                 continue
 
-        ## Only capture videos from a specific date range
-        #if not(yt.publish_date.year >= 2024):
-        #    InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
-        #    WriteHistory(HISTORY_LOG, VIDEO)
-        #    continue
+        # Only capture videos from a specific date range
+        if not(yt.publish_date.year >= 2024):
+            InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
+            WriteHistory(HISTORY_LOG, VIDEO)
+            continue
 
         # Video is NOT in the history file
         if (not(CheckHistory(HISTORY_LOG, VIDEO))):

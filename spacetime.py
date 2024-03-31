@@ -58,6 +58,15 @@ def main():
     # Iterate through the playlist
     for index, VID in enumerate(x.videos, start=1):
 
+        # Limit to the first 10 items in the playlist
+        if index == 11:
+            
+            # Report that we've reached the limit (minus 1, because we're halting before processing the 11th.)
+            InfoLogger(LOGGER, f"Reached the index limit ({index - 1} playlist items).")
+            break
+        else:
+            InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
+        
         VIDEO = VID.watch_url
 
         # Build the YouTube Object
@@ -90,10 +99,10 @@ def main():
                 continue
 
         ## Only capture videos from a specific date range
-        if not(yt.publish_date.year >= 2016):
-            InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published on {yt.publish_date.year} which is before 2016, and will be disgarded.")
-            WriteHistory(HISTORY_LOG, VIDEO)
-            continue
+        #if not(yt.publish_date.year >= 2016):
+        #    InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published on {yt.publish_date.year} which is before 2016, and will be disgarded.")
+        #    WriteHistory(HISTORY_LOG, VIDEO)
+        #    continue
 
         # Video is NOT in the history file
         if (not(CheckHistory(HISTORY_LOG, VIDEO))):
