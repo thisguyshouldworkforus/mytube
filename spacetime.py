@@ -142,11 +142,10 @@ def main():
                     "/usr/bin/ffmpeg",
                     "-i", input_audio,
                     "-i", input_video,
-                    '-c:v', 'libx264',
+                    '-c:v', 'libx265',
                     '-preset', 'medium',
                     '-c:a', 'aac',
                     '-strict', 'experimental',
-                    '-b:a', '128k',
                     FINAL_OUTPUT
                 ]
             elif THISBOX == "plex":

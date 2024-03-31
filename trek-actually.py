@@ -147,11 +147,10 @@ def main():
                     "/usr/bin/ffmpeg",
                     "-i", input_audio,
                     "-i", input_video,
-                    '-c:v', 'libx264',
+                    '-c:v', 'libx265',
                     '-preset', 'medium',
                     '-c:a', 'aac',
                     '-strict', 'experimental',
-                    '-b:a', '128k',
                     FINAL_OUTPUT
                 ]
             elif THISBOX == "plex":
@@ -160,11 +159,10 @@ def main():
                     '-hwaccel', 'cuda',
                     "-i", input_audio,
                     "-i", input_video,
-                    '-c:v', 'h264_nvenc',
+                    '-c:v', 'hevc_nvenc',
                     '-preset', 'medium',
                     '-c:a', 'aac',
                     '-strict', 'experimental',
-                    '-b:a', '128k',
                     FINAL_OUTPUT
                 ]
                 
