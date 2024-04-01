@@ -67,6 +67,15 @@ def main():
         # Adjust the index to match the original order's index
         index = start_index - rev_index + 1
 
+        # Limit to the first 10 items in the playlist
+        if index == 11:
+            
+            # Report that we've reached the limit (minus 1, because we're halting before processing the 11th.)
+            InfoLogger(LOGGER, f"Reached the index limit ({index - 1} playlist items).")
+            break
+        else:
+            InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
+
         # Video URL
         VIDEO = VID.watch_url
 
