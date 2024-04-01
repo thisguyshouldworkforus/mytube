@@ -55,18 +55,19 @@ def main():
         # Create a channel object
         x = pytubefix.Channel(YOUTUBE_URL)
 
-    # Iterate through the playlist
-    for index, VID in enumerate(x.videos, start=1):
+    # Assuming x.videos is a list or can be directly reversed; otherwise, convert it to a list
+    videos_reversed = list(reversed(x.videos))
 
-        # Limit to the first 10 items in the playlist
-        if index == 11:
-            
-            # Report that we've reached the limit (minus 1, because we're halting before processing the 11th.)
-            InfoLogger(LOGGER, f"Reached the index limit ({index - 1} playlist items).")
-            break
-        else:
-            InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
-        
+    # Calculate the starting index for enumeration based on the reversed list length
+    start_index = len(videos_reversed)
+
+    # Iterate through the playlist in reverse
+    for rev_index, VID in enumerate(videos_reversed, start=1):
+
+        # Adjust the index to match the original order's index
+        index = start_index - rev_index + 1
+
+        # Video URL
         VIDEO = VID.watch_url
 
         # Build the YouTube Object
