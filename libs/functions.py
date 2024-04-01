@@ -301,64 +301,6 @@ def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str):
     else:
         print(f"Episode {rating_key} (\"{episode_title}\") failed to update")
 
-# def PlexUpdate(section_id: str, SERIES_URL: str):
-#     # Call the function and store the result in a variable
-#     series_data = GetSeriesData(GetRatingKeys(SERIES_URL))
-    
-#     for episode in series_data["MediaContainer"]["Metadata"]:
-    
-#         # Search for a pattern
-#         pattern = re.compile(r'^.*? - .*? - (.*)(?:\s*\(\d{4}-\d{2}-\d{2}\))\.mkv$|\.mp4$')
-    
-#         RATING_KEY = episode["ratingKey"]
-#         FILEPATH = episode["Media"][0]["Part"][0]["file"]
-#         match = pattern.search(FILEPATH)
-#         if match:
-#             EPISODE_TITLE = (match.group(1)).strip()
-#             if EPISODE_TITLE != episode["title"]:
-#             #if re.match(r'^Episode.*$', episode["title"]):
-#                 EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id)
-#                 #print(f"File Title: '{EPISODE_TITLE}'\nMetadata Title: '{episode['title']}'")
-
-# def PosterUpdate(target_file_path: str, thumbnail_url: str, SERIES_URL: str):
-#     def find_rating_key_by_file_path(series_data, target_file_path):
-#         for episode in series_data["MediaContainer"]["Metadata"]:
-#             file_path = episode["Media"][0]["Part"][0]["file"]
-#             # Check if the current episode's file path matches the target file path
-#             if file_path == target_file_path:
-#                 return episode["ratingKey"]
-#         # Return None if no match is found
-#         return None
-    
-#     # Example usage
-#     series_data = GetSeriesData(GetRatingKeys(SERIES_URL))
-#     rating_key = find_rating_key_by_file_path(series_data, target_file_path)
-    
-#     for episode in series_data["MediaContainer"]["Metadata"]:
-#         file_path = episode["Media"][0]["Part"][0]["file"]
-#         # Check if the current episode's file path matches the target file path
-#         if file_path == target_file_path:
-#             episode_title = episode["title"]
-#             break
-
-#     headers = {
-#         'Accept': 'application/json',
-#         'Content-Type': 'application/json',
-#         'X-Plex-Token': f'{PLEX_TOKEN}'
-#     }
-    
-#     poster_params = {
-#         'url': f'{thumbnail_url}'
-#     }
-    
-#     poster_update_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{rating_key}/posters"
-#     poster_response = requests.post(url=poster_update_url, headers=headers, params=poster_params)
-    
-#     if poster_response.status_code == 200:
-#         print(f"Poster for episode {rating_key} (\"{episode_title}\") updated successfully")
-#     else:
-#         print(f"Poster for episode {rating_key} (\"{episode_title}\") failed to update")
-
 def RefreshPlex(section_id: str):
     headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{PLEX_TOKEN}'}
     url = f"http://plex.int.snyderfamily.co:32400/library/sections/{section_id}/refresh"
@@ -414,6 +356,6 @@ def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = 
             poster_response = requests.post(url=poster_update_url, headers=headers, params=poster_params)
             
             if poster_response.status_code == 200:
-                print(f"Poster for episode {RATING_KEY} (\"{episode['title']}\") updated successfully")
+                print(f"Poster for episode {RATING_KEY} (\"{EPISODE_TITLE}\") updated successfully")
             else:
-                print(f"Poster for episode {RATING_KEY} (\"{episode['title']}\") failed to update")
+                print(f"Poster for episode {RATING_KEY} (\"{EPISODE_TITLE}\") failed to update")
