@@ -55,32 +55,25 @@ def main():
         # Create a channel object
         x = pytubefix.Channel(YOUTUBE_URL)
 
-    # Assuming x.videos is a list or can be directly reversed; otherwise, convert it to a list
-    videos_reversed = list(reversed(x.videos))
-
-    # Calculate the starting index for enumeration based on the reversed list length
-    start_index = len(videos_reversed)
-
-    # Iterate through the playlist in reverse
+    # Assuming videos_reversed is a reversed list of x.videos and start_index is defined as len(x.videos)
+    videos_reversed = list(reversed(x.videos))  # Reverse the list of videos
+    
+    # Check if there are more than 10 videos, and if so, only work with the last 10
+    if len(videos_reversed) > 10:
+        videos_reversed = videos_reversed[:10]
+    
+    # Iterate through at most the last 10 items of the playlist in reverse
     for rev_index, VID in enumerate(videos_reversed, start=1):
-
-        # Adjust the index to match the original order's index
-        index = start_index - rev_index + 1
-
-        # Limit to the first 10 items in the playlist
-        if index == 11:
-            
-            # Report that we've reached the limit (minus 1, because we're halting before processing the 11th.)
-            InfoLogger(LOGGER, f"Reached the index limit ({index - 1} playlist items).")
-            break
-        else:
-            InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
-
         # Video URL
         VIDEO = VID.watch_url
-
+    
         # Build the YouTube Object
         yt = pytubefix.YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
+    
+        # Log the action; adjust logging to reflect that we're working in reverse
+        InfoLogger(LOGGER, f"Processing video {rev_index} of the last {len(videos_reversed)} items in reverse order")
+    
+    # Note: No need to check for 'index == 11' now, as we're directly limiting the loop to at most 10 iterations
 
         # Set the temporary directory
         TEMP_DIR = str(pytubefix.helpers.target_directory(f'/opt/projects/mytube/downloads/{LOGGER}'))
@@ -117,14 +110,14 @@ def main():
 
         ## Only capture videos from a specific date range
         #if not(yt.publish_date.year >= 2024):
-        #    InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
+        #    InfoLogger(LOGGER, f"{rev_index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
         #    WriteHistory(HISTORY_LOG, VIDEO)
         #    continue
 
         # Video is NOT in the history file
         if (not(CheckHistory(HISTORY_LOG, VIDEO))):
 
-            InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) was NOT in history, and will be downloaded.")
+            InfoLogger(LOGGER, f"{rev_index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) was NOT in history, and will be downloaded.")
 
             # Construct FFMPEG objects
             THUMBNAIL_URL = yt.thumbnail_url
@@ -225,7 +218,7 @@ def main():
                 sys.exit(1)
 
         else: # Video IS in the history file
-            InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) WAS in history, and will be disgarded.")
+            InfoLogger(LOGGER, f"{rev_index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) WAS in history, and will be disgarded.")
             continue
 
     # Remove the lock file when the script finishes
