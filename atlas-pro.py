@@ -58,14 +58,14 @@ def main():
     # Iterate through the playlist
     for index, VID in enumerate(x.videos, start=1):
 
-        ## Limit to the first 10 items in the playlist
-        #if index == 11:
-        #    
-        #    # Report that we've reached the limit (minus 1, because we're halting before processing the 11th.)
-        #    InfoLogger(LOGGER, f"Reached the index limit ({index - 1} playlist items).")
-        #    break
-        #else:
-        #    InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
+        # Limit to the first 10 items in the playlist
+        if index == 11:
+            
+            # Report that we've reached the limit (minus 1, because we're halting before processing the 11th.)
+            InfoLogger(LOGGER, f"Reached the index limit ({index - 1} playlist items).")
+            break
+        else:
+            InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
         
         VIDEO = VID.watch_url
 
