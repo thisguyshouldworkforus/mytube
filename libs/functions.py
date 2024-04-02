@@ -103,12 +103,7 @@ def FileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE:
     day = publish_date.day
     day_of_week = publish_date.strftime("%a")
 
-    # This is to fix a discrepency between how Linux (date) and Sonarr writes the day "Thursday"
-    if day_of_week == "Thu":
-        day_of_week = "Thur"
-
     # Calculate the day of the year (episode number)
-    # Minus one day, because there was no episode on Saturday, January 13th.
     day_of_year = publish_date.timetuple().tm_yday
 
     # Construct the filename
