@@ -74,12 +74,14 @@ def main():
 
         # Ignore Weekend News
         day_of_week = yt.publish_date.strftime("%a")
-        if day_of_week == 'Sat' or 'Sun':
+        if day_of_week in ('Sat', 'Sun'):
             InfoLogger(LOGGER, "Skipping Weekend News")
             if (not(CheckHistory(HISTORY_LOG, VIDEO))):
                 WriteHistory(HISTORY_LOG, VIDEO)
                 continue
-            
+            else:
+                continue
+        
         # Set the temporary directory
         TEMP_DIR = str(pytubefix.helpers.target_directory(f'/opt/projects/mytube/downloads/{LOGGER}'))
 
