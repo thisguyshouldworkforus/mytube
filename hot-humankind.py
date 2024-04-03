@@ -18,6 +18,7 @@ SECTION_ID = str('6')
 SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F38905&context=source%3Acontent.library~1~3')
 PLAYLIST = False
 CHANNEL = True
+INITIALIZE = False
 ####[ REQUIRED VARIABLES ]####
 
 # Get the hostname, for later
@@ -58,14 +59,15 @@ def main():
     # Iterate through the playlist
     for index, VID in enumerate(x.videos, start=1):
 
-        # Limit to the first 10 items in the playlist
-        if index == 11:
-            
-            # Report that we've reached the limit (minus 1, because we're halting before processing the 11th.)
-            InfoLogger(LOGGER, f"Reached the index limit ({index - 1} playlist items).")
-            break
-        else:
-            InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
+        if not INITIALIZE:
+            # Limit to the first 10 items in the playlist
+            if index == 11:
+                
+                # Report that we've reached the limit (minus 1, because we're halting before processing the 11th.)
+                InfoLogger(LOGGER, f"Reached the index limit ({index - 1} playlist items).")
+                break
+            else:
+                InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
         
         VIDEO = VID.watch_url
 

@@ -2,6 +2,7 @@
 
 # Import Modules
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -10,15 +11,15 @@ import pytubefix.helpers
 from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory, PlexLibraryUpdate, RefreshPlex
 
 ####[ REQUIRED VARIABLES ]####
-LOGGER = str('dannygo')
-OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.kids/Danny Go! (2019) {tvdb-437666}'))
-SERIES_PREFIX = str("Danny Go! (2019) - ")
-YOUTUBE_URL = str('https://www.youtube.com/@DannyGo/videos')
-SECTION_ID = str('7')
-SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F38622&context=source%3Acontent.library~2~1')
+LOGGER = str('srs')
+OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.docs/Shawn Ryan Show, The (2017) {tvdb-000000}'))
+SERIES_PREFIX = str('Shawn Ryan Show, The (2017) - ')
+YOUTUBE_URL = str('https://www.youtube.com/@ShawnRyanShowOfficial/videos')
+SECTION_ID = str('6')
+SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F41040&context=source%3Acontent.library~3~8')
 PLAYLIST = False
 CHANNEL = True
-INITIALIZE = False
+INITIALIZE = True
 ####[ REQUIRED VARIABLES ]####
 
 # Get the hostname, for later
@@ -84,11 +85,30 @@ def main():
         HISTORY_PATH = str(pytubefix.helpers.target_directory('/opt/projects/mytube/history'))
         OUTPUT_FILENAME = FileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}", f"{TITLE}")
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
-        
+        LENGTH = int(yt.length // 60)
         # Check if the history file exists, and if not, create it
         if not os.path.exists(HISTORY_LOG):
             with open(HISTORY_LOG, "w") as f:
                 f.write(f"### {LOGGER} log ###\n")
+
+        # Only interested in proper SRS Episodes
+        pattern = r'SRS #\d{1,4}'
+        if not (re.search(pattern, TITLE, re.IGNORECASE)):
+            InfoLogger(LOGGER, f"Episode \"{TITLE}\" ({ID}) is not an official SRS numbered episode!)")
+            if (not(CheckHistory(HISTORY_LOG, VIDEO))):
+                WriteHistory(HISTORY_LOG, VIDEO)
+                continue
+            else:
+                continue
+
+        # Only interested in long-form interviews
+        if LENGTH < 62:
+            InfoLogger(LOGGER, f"Episode \"{TITLE}\" ({ID}) is too short ({LENGTH} minutes!)")
+            if (not(CheckHistory(HISTORY_LOG, VIDEO))):
+                WriteHistory(HISTORY_LOG, VIDEO)
+                continue
+            else:
+                continue
 
         FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
 

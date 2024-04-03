@@ -10,12 +10,12 @@ import pytubefix.helpers
 from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory, PlexLibraryUpdate, RefreshPlex
 
 ####[ REQUIRED VARIABLES ]####
-LOGGER = str('dannygo')
-OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.kids/Danny Go! (2019) {tvdb-437666}'))
-SERIES_PREFIX = str("Danny Go! (2019) - ")
-YOUTUBE_URL = str('https://www.youtube.com/@DannyGo/videos')
-SECTION_ID = str('7')
-SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F38622&context=source%3Acontent.library~2~1')
+LOGGER = str('abt')
+OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.docs/Another Boring Topic (2017) {tvdb-445736}'))
+SERIES_PREFIX = str('Another Boring Topic (2017) - ')
+YOUTUBE_URL = str('https://www.youtube.com/@AnotherBoringTopic/videos')
+SECTION_ID = str('6')
+SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F40963&context=source%3Acontent.library~0~3')
 PLAYLIST = False
 CHANNEL = True
 INITIALIZE = False
