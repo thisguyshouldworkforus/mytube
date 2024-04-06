@@ -19,7 +19,7 @@ SECTION_ID = str('6')
 SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F41040&context=source%3Acontent.library~3~8')
 PLAYLIST = False
 CHANNEL = True
-INITIALIZE = True
+INITIALIZE = False
 ####[ REQUIRED VARIABLES ]####
 
 # Get the hostname, for later
@@ -92,7 +92,7 @@ def main():
                 f.write(f"### {LOGGER} log ###\n")
 
         # Only interested in proper SRS Episodes
-        pattern = r'SRS #\d{1,4}'
+        pattern = r'(SRS |Shawn Ryan Show )(#)?(\s+)?(\d{1,4})'
         if not (re.search(pattern, TITLE, re.IGNORECASE)):
             InfoLogger(LOGGER, f"Episode \"{TITLE}\" ({ID}) is not an official SRS numbered episode!)")
             if (not(CheckHistory(HISTORY_LOG, VIDEO))):
@@ -102,7 +102,7 @@ def main():
                 continue
 
         # Only interested in long-form interviews
-        if LENGTH < 62:
+        if LENGTH < 59:
             InfoLogger(LOGGER, f"Episode \"{TITLE}\" ({ID}) is too short ({LENGTH} minutes!)")
             if (not(CheckHistory(HISTORY_LOG, VIDEO))):
                 WriteHistory(HISTORY_LOG, VIDEO)
