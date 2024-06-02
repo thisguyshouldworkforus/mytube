@@ -7,9 +7,6 @@ __pycache__/
 # Igorne Python Virtual Environment
 venv/
 
-# Ignore sensitive information
-credentials/
-
 # Ignore Logs
 logs/
 
