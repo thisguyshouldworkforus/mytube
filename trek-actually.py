@@ -154,29 +154,17 @@ def main():
                 continue
 
             # Command to mux video and audio will differ, depending on the hostname
-            if THISBOX == "dev":
-                command = [
-                    "/usr/bin/ffmpeg",
-                    "-i", input_audio,
-                    "-i", input_video,
-                    '-c:v', 'libx265',
-                    '-preset', 'medium',
-                    '-c:a', 'aac',
-                    '-strict', 'experimental',
-                    FINAL_OUTPUT
-                ]
-            elif THISBOX == "plex":
-                command = [
-                    "/usr/bin/ffmpeg",
-                    '-hwaccel', 'cuda',
-                    "-i", input_audio,
-                    "-i", input_video,
-                    '-c:v', 'hevc_nvenc',
-                    '-preset', 'medium',
-                    '-c:a', 'aac',
-                    '-strict', 'experimental',
-                    FINAL_OUTPUT
-                ]
+            command = [
+                "/usr/bin/ffmpeg",
+                '-hwaccel', 'cuda',
+                "-i", input_audio,
+                "-i", input_video,
+                '-c:v', 'hevc_nvenc',
+                '-preset', 'medium',
+                '-c:a', 'aac',
+                '-strict', 'experimental',
+                FINAL_OUTPUT
+            ]
                 
             # If an entry for the video ID does not yet exist in the history file, then download it.
             OUTPUT = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
