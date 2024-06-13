@@ -15,7 +15,7 @@ OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.shows/Trek, 
 SERIES_PREFIX = str('Trek, Actually (2016) - ')
 YOUTUBE_URL = str('https://www.youtube.com/watch?v=09TySF0FN6Y&list=PL0-LSnSBNInfrr7MDRuXmfk1LJ_KjvaXt&pp=iAQB')
 SECTION_ID = str('5')
-SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F39363&context=source%3Acontent.library~12~2')
+SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F39363&context=source%3Acontent.library~0~18')
 PLAYLIST = True
 CHANNEL = False
 ####[ REQUIRED VARIABLES ]####
@@ -58,9 +58,9 @@ def main():
     # Assuming videos_reversed is a reversed list of x.videos and start_index is defined as len(x.videos)
     videos_reversed = list(reversed(x.videos))  # Reverse the list of videos
     
-    # Check if there are more than 10 videos, and if so, only work with the last 10
-    if len(videos_reversed) > 10:
-        videos_reversed = videos_reversed[:10]
+    # # Check if there are more than 10 videos, and if so, only work with the last 10
+    # if len(videos_reversed) > 10:
+    #     videos_reversed = videos_reversed[:10]
     
     # Iterate through at most the last 10 items of the playlist in reverse
     for rev_index, VID in enumerate(videos_reversed, start=1):
