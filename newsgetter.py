@@ -15,10 +15,10 @@ OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.shows/NBC Ni
 SERIES_PREFIX = str("NBC Nightly News with Lester Holt (2013) - ")
 YOUTUBE_URL = str('https://www.youtube.com/playlist?list=PL0tDb4jw6kPymVj5xNNha5PezudD5Qw9L')
 SECTION_ID = str('5')
-SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F37103&context=source%3Acontent.library~16~3')
+SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F37103&context=source%3Acontent.library~0~9')
 PLAYLIST = True
 CHANNEL = False
-INITIALIZE = False
+INITIALIZE = True
 ####[ REQUIRED VARIABLES ]####
 
 # Get the hostname, for later
@@ -74,16 +74,6 @@ def main():
         # Build the YouTube Object
         yt = pytubefix.YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
 
-        # Ignore Weekend News
-        day_of_week = yt.publish_date.strftime("%a")
-        if day_of_week in ('Sat', 'Sun'):
-            InfoLogger(LOGGER, "Skipping Weekend News")
-            if (not(CheckHistory(HISTORY_LOG, VIDEO))):
-                WriteHistory(HISTORY_LOG, VIDEO)
-                continue
-            else:
-                continue
-        
         # Set the temporary directory
         TEMP_DIR = str(pytubefix.helpers.target_directory(f'/opt/projects/mytube/downloads/{LOGGER}'))
 
@@ -99,6 +89,16 @@ def main():
         if not os.path.exists(HISTORY_LOG):
             with open(HISTORY_LOG, "w") as f:
                 f.write(f"### {LOGGER} log ###\n")
+
+        # Ignore Weekend News
+        day_of_week = yt.publish_date.strftime("%a")
+        if day_of_week in ('Sat', 'Sun'):
+            InfoLogger(LOGGER, "Skipping Weekend News")
+            if (not(CheckHistory(HISTORY_LOG, VIDEO))):
+                WriteHistory(HISTORY_LOG, VIDEO)
+                continue
+            else:
+                continue
 
         FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
 
@@ -158,10 +158,9 @@ def main():
             # Command to mux video and audio will differ, depending on the hostname
             command = [
                 "/usr/bin/ffmpeg",
-                '-hwaccel', 'cuda',
                 "-i", input_audio,
                 "-i", input_video,
-                '-c:v', 'hevc_nvenc',
+                '-c:v', 'libx265',
                 '-preset', 'medium',
                 '-c:a', 'aac',
                 '-strict', 'experimental',
