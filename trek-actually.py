@@ -13,7 +13,7 @@ from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, Not
 LOGGER = str('trek')
 OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.shows/Trek, Actually (2016) {tvdb-000000}'))
 SERIES_PREFIX = str('Trek, Actually (2016) - ')
-YOUTUBE_URL = str('https://www.youtube.com/watch?v=09TySF0FN6Y&list=PL0-LSnSBNInfrr7MDRuXmfk1LJ_KjvaXt&pp=iAQB')
+YOUTUBE_URL = str('https://www.youtube.com/playlist?list=PL0-LSnSBNInfrr7MDRuXmfk1LJ_KjvaXt')
 SECTION_ID = str('5')
 SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F39363&context=source%3Acontent.library~0~18')
 PLAYLIST = True
