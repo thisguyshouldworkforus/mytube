@@ -100,11 +100,11 @@ def main():
             else:
                 continue
 
-        ## Only capture videos from a specific date range
-        #if not(yt.publish_date.year >= 2016):
-        #    InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published on {yt.publish_date.year} which is before 2016, and will be disgarded.")
-        #    WriteHistory(HISTORY_LOG, VIDEO)
-        #    continue
+        # Only capture videos from a specific date range
+        if not(yt.publish_date.year >= 2016):
+           InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published on {yt.publish_date.year} which is before 2016, and will be disgarded.")
+           WriteHistory(HISTORY_LOG, VIDEO)
+           continue
 
         # Video is NOT in the history file
         if (not(CheckHistory(HISTORY_LOG, VIDEO))):
