@@ -19,7 +19,7 @@ SECTION_ID = str('6')
 SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F41040&context=source%3Acontent.library~3~8')
 PLAYLIST = False
 CHANNEL = True
-INITIALIZE = True
+INITIALIZE = False
 ####[ REQUIRED VARIABLES ]####
 
 # Get the hostname, for later
