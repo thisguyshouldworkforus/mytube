@@ -19,7 +19,7 @@ SECTION_ID = str('6')
 SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F12210&context=source%3Acontent.library~1~0')
 PLAYLIST = False
 CHANNEL = True
-INITIALIZE = False
+INITIALIZE = True
 ####[ REQUIRED VARIABLES ]####
 
 # Get the hostname, for later
@@ -169,9 +169,10 @@ def main():
             # Command to mux video and audio will differ, depending on the hostname
             command = [
                 "/usr/bin/ffmpeg",
+                '-hwaccel', 'cuda',
                 "-i", input_audio,
                 "-i", input_video,
-                '-c:v', 'libx265',
+                '-c:v', 'hevc_nvenc',
                 '-preset', 'medium',
                 '-c:a', 'aac',
                 '-strict', 'experimental',

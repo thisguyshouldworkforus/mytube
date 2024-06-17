@@ -148,9 +148,10 @@ def main():
             # Command to mux video and audio will differ, depending on the hostname
             command = [
                 "/usr/bin/ffmpeg",
+                '-hwaccel', 'cuda',
                 "-i", input_audio,
                 "-i", input_video,
-                '-c:v', 'libx265',
+                '-c:v', 'hevc_nvenc',
                 '-preset', 'medium',
                 '-c:a', 'aac',
                 '-strict', 'experimental',
