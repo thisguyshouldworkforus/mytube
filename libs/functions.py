@@ -115,6 +115,16 @@ def FileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE:
     # return the filename
     return filename
 
+def JREFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE: str = None):
+    from pytubefix.helpers import safe_filename
+
+    # Construct the filename
+    if EPISODE_TITLE:
+        filename = f"{SERIES_PREFIX}{safe_filename(EPISODE_TITLE, max_length=100)} ({PUBLISH_DATE}).mkv"
+
+    # return the filename
+    return filename
+
 def NotifyMe(title: str = 'New Message', priority: str = 3, tags: str = 'incoming_envelope', message: str = 'No message included'):
     
     # Get the NTFY url to post messages to
