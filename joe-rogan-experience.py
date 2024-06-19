@@ -8,7 +8,7 @@ import sys
 import pytubefix
 import pytubefix.helpers
 import re
-from libs.functions import CheckHistory, CheckProcess, FileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory, PlexLibraryUpdate, RefreshPlex
+from libs.functions import CheckHistory, CheckProcess, JREFileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory, PlexLibraryUpdate, RefreshPlex
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('jre')
@@ -69,9 +69,9 @@ def main():
                 break
             else:
                 InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
-        
+        print(f"Working on video {index} of {len(x.video_urls)}")
         VIDEO = VID.watch_url
-
+        print(f"Working on {VIDEO}")
         # Build the YouTube Object
         yt = pytubefix.YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
 
@@ -80,28 +80,40 @@ def main():
 
         # Set the video ID, title, and publish date
         ID = str(yt.video_id)
-        TITLE = str(yt.title).strip()
+        TITLE = str(yt.title).replace('Joe Rogan Experience #', 'Episode ').strip()
         PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
         HISTORY_PATH = str(pytubefix.helpers.target_directory('/opt/projects/mytube/history'))
-        OUTPUT_FILENAME = FileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}", f"{TITLE}")
-        HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
+        OUTPUT_FILENAME = JREFileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}", f"{TITLE}")
         LENGTH = int(yt.length // 60)
+        HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
         
         # Check if the history file exists, and if not, create it
         if not os.path.exists(HISTORY_LOG):
             with open(HISTORY_LOG, "w") as f:
                 f.write(f"### {LOGGER} log ###\n")
 
-        # Only interested in proper SRS Episodes
-        pattern = r'(Joe\ Rogan\ Experience\ )(#)(\d{4})(\s+)(\-)(\s+)(.*)'
-        if not (re.search(pattern, TITLE, re.IGNORECASE)):
-            InfoLogger(LOGGER, f"Episode \"{TITLE}\" ({ID}) is not an official JRE numbered episode!)")
+        FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
+
+        print("Checking if exists")
+        if os.path.exists(FINAL_OUTPUT):
+            InfoLogger(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!")
             if (not(CheckHistory(HISTORY_LOG, VIDEO))):
                 WriteHistory(HISTORY_LOG, VIDEO)
                 continue
             else:
                 continue
+        
+        print("Checking pattern")
+        pattern = r'(JRE MMA|Protect Our Parks)'
+        if re.search(pattern, TITLE, re.IGNORECASE):
+            InfoLogger(LOGGER, f"Episode \"{TITLE}\" ({ID}) is not a desired episode!")
+            if not CheckHistory(HISTORY_LOG, VIDEO):
+                WriteHistory(HISTORY_LOG, VIDEO)
+                continue
+            else:
+                continue
 
+        print("Checking length")
         # Only interested in long-form interviews
         if LENGTH < 59:
             InfoLogger(LOGGER, f"Episode \"{TITLE}\" ({ID}) is too short ({LENGTH} minutes!)")
@@ -111,21 +123,11 @@ def main():
             else:
                 continue
 
-        FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
-
-        if os.path.exists(FINAL_OUTPUT):
-            InfoLogger(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!")
-            if (not(CheckHistory(HISTORY_LOG, VIDEO))):
-                WriteHistory(HISTORY_LOG, VIDEO)
-                continue
-            else:
-                continue
-
-        # Only capture videos from a specific date range
-        if not(yt.publish_date.year >= 2024):
-           InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
-           WriteHistory(HISTORY_LOG, VIDEO)
-           continue
+        ## Only capture videos from a specific date range
+        #if not(yt.publish_date.year >= 2024):
+        #    InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
+        #    WriteHistory(HISTORY_LOG, VIDEO)
+        #    continue
 
         # Video is NOT in the history file
         if (not(CheckHistory(HISTORY_LOG, VIDEO))):
