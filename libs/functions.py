@@ -115,28 +115,42 @@ def FileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE:
     # return the filename
     return filename
 
-def JREFileName(SERIES_PREFIX: str = None, EPISODE_TITLE: str = None, PUBLISH_DATE: str = None):
+def JREFileName(SERIES_PREFIX: str = None, EPISODE_TITLE: str = None, PUBLISH_DATE: str = None, HISTORY_LOG: str = None):
+    # Initialize variables with default values
+    PAD = "0000"
+    EPISODE_NUMBER = "0000"
+    GUESTS = ""
 
-    # Extract the episode number from the title
-    pattern = re.compile(r'^#(\d{1,4})(.*)$')
-    match = pattern.search(EPISODE_TITLE)
-    if match:
-        PAD = match.group(1).zfill(4)
-        EPISODE_NUMBER = match.group(1)
-        GUESTS = match.group(2).replace('-', '').strip()
-    
-    # Parse the PUBLISH_DATE to a datetime object
-    publish_date = datetime.datetime.strptime(PUBLISH_DATE, "%Y-%m-%d")
+    try:
+        # Extract the episode number from the title
+        pattern = re.compile(r'^#(\d{1,4})(.*)$')
+        match = pattern.search(EPISODE_TITLE)
+        if match:
+            PAD = match.group(1).zfill(4)
+            EPISODE_NUMBER = match.group(1)
+            GUESTS = match.group(2).replace('-', '').strip()
+        else:
+            InfoLogger(HISTORY_LOG, f"\"{EPISODE_TITLE}\" does not match the expected pattern")
+    except Exception as e:
+        InfoLogger(HISTORY_LOG, f"\"{EPISODE_TITLE}\" generated an error: {e}")
 
-    # Extract the year, month (as abbreviation), and day (with zero padding)
-    year = publish_date.year
+    try:
+        # Parse the PUBLISH_DATE to a datetime object
+        publish_date = datetime.datetime.strptime(PUBLISH_DATE, "%Y-%m-%d")
 
-    # Construct the filename
-    if EPISODE_TITLE:
-        filename = f"{SERIES_PREFIX}S{year}E{PAD} - #{EPISODE_NUMBER} {GUESTS} ({PUBLISH_DATE}).mkv"
+        # Extract the year, month (as abbreviation), and day (with zero padding)
+        year = publish_date.year
 
-    # return the filename
-    return filename
+        # Construct the filename
+        if EPISODE_TITLE:
+            filename = f"{SERIES_PREFIX}S{year}E{PAD} - #{EPISODE_NUMBER} {GUESTS} ({PUBLISH_DATE}).mkv"
+            return filename
+        else:
+            InfoLogger(HISTORY_LOG, "Episode title is missing")
+            return None
+    except Exception as e:
+        InfoLogger(HISTORY_LOG, f"Error parsing date \"{PUBLISH_DATE}\": {e}")
+        return None
 
 def NotifyMe(title: str = 'New Message', priority: str = 3, tags: str = 'incoming_envelope', message: str = 'No message included'):
     
@@ -319,7 +333,7 @@ def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str):
     else:
         print(f"Episode {rating_key} (\"{episode_title}\") failed to update")
 
-def RefreshPlex(section_id: str):
+def RefreshPlex(section_id: str, history_log: str = None):
     headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{PLEX_TOKEN}'}
     url = f"http://plex.int.snyderfamily.co:32400/library/sections/{section_id}/refresh"
     payload = {}
@@ -344,14 +358,13 @@ def RefreshPlex(section_id: str):
         section_name = "Music"
 
     if response.status_code == 200:
-        print(f"Plex Library Section '{section_name}' refreshed successfully")
+        InfoLogger(history_log, f"Plex Library Section '{section_name}' refreshed successfully")
         time.sleep(5) # Wait 5 seconds before continuing
     else:
-        print(f"Plex Library Section '{section_name}' failed to refresh")
-        print(response.text)
+        InfoLogger(history_log, f"Plex Library Section '{section_name}' failed to refresh\n{response.text}")
 
 def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = None, thumbnail_url: str = None, history_log: str = None):
-    RefreshPlex(section_id)
+    RefreshPlex(section_id, history_log)
     series_data = GetSeriesData(GetRatingKeys(SERIES_URL))
     
     for episode in series_data["MediaContainer"]["Metadata"]:
