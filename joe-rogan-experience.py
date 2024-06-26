@@ -217,7 +217,7 @@ def main():
                 # Clean up our mess
                 os.remove(input_audio)
                 os.remove(input_video)
-                os.remove(FINAL_OUTPUT)
+                os.remove(TEMP_OUTPUT)
 
                 # Remove the lock file when the script finishes
                 sys.exit(1)
