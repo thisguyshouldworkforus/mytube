@@ -115,12 +115,25 @@ def FileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE:
     # return the filename
     return filename
 
-def JREFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE: str = None):
-    from pytubefix.helpers import safe_filename
+def JREFileName(SERIES_PREFIX: str = None, EPISODE_TITLE: str = None, PUBLISH_DATE: str = None):
+
+    # Extract the episode number from the title
+    pattern = re.compile(r'^#(\d{1,4})(.*)$')
+    match = pattern.search(EPISODE_TITLE)
+    if match:
+        PAD = match.group(1).zfill(4)
+        EPISODE_NUMBER = match.group(1)
+        GUESTS = match.group(2).replace('-', '').strip()
+    
+    # Parse the PUBLISH_DATE to a datetime object
+    publish_date = datetime.datetime.strptime(PUBLISH_DATE, "%Y-%m-%d")
+
+    # Extract the year, month (as abbreviation), and day (with zero padding)
+    year = publish_date.year
 
     # Construct the filename
     if EPISODE_TITLE:
-        filename = f"{SERIES_PREFIX}{safe_filename(EPISODE_TITLE, max_length=100)} ({PUBLISH_DATE}).mkv"
+        filename = f"{SERIES_PREFIX}S{year}E{PAD} - #{EPISODE_NUMBER} {GUESTS} ({PUBLISH_DATE}).mkv"
 
     # return the filename
     return filename
@@ -337,30 +350,34 @@ def RefreshPlex(section_id: str):
         print(f"Plex Library Section '{section_name}' failed to refresh")
         print(response.text)
 
-def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = None, thumbnail_url: str = None):
+def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = None, thumbnail_url: str = None, history_log: str = None):
+    RefreshPlex(section_id)
     series_data = GetSeriesData(GetRatingKeys(SERIES_URL))
     
     for episode in series_data["MediaContainer"]["Metadata"]:
         RATING_KEY = episode["ratingKey"]
         FILEPATH = episode["Media"][0]["Part"][0]["file"]
         
-        # Check and update episode metadata based on file name pattern
-        pattern = re.compile(r'^.*? - .*? - (.*)(?:\s*\(\d{4}-\d{2}-\d{2}\))\.mkv$|\.mp4$')
-        match = pattern.search(FILEPATH)
-        if match:
-            EPISODE_TITLE = (match.group(1)).strip()
-            if EPISODE_TITLE != episode["title"]:
-                EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id)
-                print(f"Metadata for episode {RATING_KEY} (\"{EPISODE_TITLE}\") updated successfully")
-        
-        # Update poster if target_file_path matches or if it's a general update
-        if thumbnail_url and (not target_file_path or FILEPATH == target_file_path):
-            poster_update_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{RATING_KEY}/posters"
-            headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{PLEX_TOKEN}'}
-            poster_params = {'url': f'{thumbnail_url}'}
-            poster_response = requests.post(url=poster_update_url, headers=headers, params=poster_params)
+        if FILEPATH == target_file_path:
+            # Check and update episode metadata based on file name pattern
+            pattern = re.compile(r'^.*? - .*? - (.*)(?:\s*\(\d{4}-\d{2}-\d{2}\))\.mkv$|\.mp4$')
+            match = pattern.search(FILEPATH)
+            if match:
+                EPISODE_TITLE = (match.group(1)).strip()
+                if EPISODE_TITLE != episode["title"]:
+                    EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id)
+                    InfoLogger(history_log, f"Metadata for episode {RATING_KEY} (\"{EPISODE_TITLE}\") updated successfully")
             
-            if poster_response.status_code == 200:
-                print(f"Poster for episode {RATING_KEY} (\"{EPISODE_TITLE}\") updated successfully")
-            else:
-                print(f"Poster for episode {RATING_KEY} (\"{EPISODE_TITLE}\") failed to update")
+            # Update poster if target_file_path matches or if it's a general update
+            if thumbnail_url and (not target_file_path or FILEPATH == target_file_path):
+                poster_update_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{RATING_KEY}/posters"
+                headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{PLEX_TOKEN}'}
+                poster_params = {'url': f'{thumbnail_url}'}
+                poster_response = requests.post(url=poster_update_url, headers=headers, params=poster_params)
+                
+                if poster_response.status_code == 200:
+                    InfoLogger(history_log, f"Poster for episode {RATING_KEY} (\"{EPISODE_TITLE}\") updated successfully")
+                else:
+                    InfoLogger(history_log, f"Poster for episode {RATING_KEY} (\"{EPISODE_TITLE}\") failed to update")
+        else:
+            continue
