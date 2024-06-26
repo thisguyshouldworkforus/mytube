@@ -90,6 +90,7 @@ def main():
             with open(HISTORY_LOG, "w") as f:
                 f.write(f"### {LOGGER} log ###\n")
 
+        TEMP_OUTPUT = f"{TEMP_DIR}/{OUTPUT_FILENAME}"
         FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
 
         if os.path.exists(FINAL_OUTPUT):

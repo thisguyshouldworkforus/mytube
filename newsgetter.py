@@ -100,6 +100,7 @@ def main():
             else:
                 continue
 
+        TEMP_OUTPUT = f"{TEMP_DIR}/{OUTPUT_FILENAME}"
         FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
 
         if os.path.exists(FINAL_OUTPUT):
