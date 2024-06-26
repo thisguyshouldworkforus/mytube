@@ -70,7 +70,6 @@ def main():
                 break
             else:
                 InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
-        print(f"Working on video {index} of {len(x.video_urls)}")
 
         VIDEO = VID.watch_url
 
@@ -82,10 +81,9 @@ def main():
 
         # Set the video ID, title, and publish date
         ID = str(yt.video_id)
-        TITLE = str(yt.title).replace('Joe Rogan Experience ', '', 1)
+        TITLE = str(re.sub(r'\s{2,}', ' ', yt.title.replace('Joe Rogan Experience ', '', 1).replace('-', '').replace('–', '').replace('—', '')).strip())
         PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
         HISTORY_PATH = str(pytubefix.helpers.target_directory('/opt/projects/mytube/history'))
-        OUTPUT_FILENAME = JREFileName(f"{SERIES_PREFIX}", f"{TITLE}", f"{PUBLISH_DATE}")
         LENGTH = int(yt.length // 60)
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
         
@@ -93,6 +91,8 @@ def main():
         if not os.path.exists(HISTORY_LOG):
             with open(HISTORY_LOG, "w") as f:
                 f.write(f"### {LOGGER} log ###\n")
+
+        OUTPUT_FILENAME = JREFileName(f"{SERIES_PREFIX}", f"{TITLE}", f"{PUBLISH_DATE}", f"{HISTORY_LOG}")
 
         TEMP_OUTPUT = f"{TEMP_DIR}/{OUTPUT_FILENAME}"
         FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
