@@ -165,7 +165,7 @@ def main():
                 '-preset', 'medium',
                 '-c:a', 'aac',
                 '-strict', 'experimental',
-                FINAL_OUTPUT
+                TEMP_OUTPUT
             ]
                 
             # If an entry for the video ID does not yet exist in the history file, then download it.
