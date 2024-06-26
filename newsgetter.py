@@ -185,12 +185,14 @@ def main():
                 # Clean up our mess
                 os.remove(input_audio)
                 os.remove(input_video)
-
-                # Refresh the library
-                RefreshPlex(SECTION_ID)
+                shutil.move(TEMP_OUTPUT, FINAL_OUTPUT)
+                if os.path.exists(f"{TEMP_OUTPUT}"):
+                    os.remove(f"{TEMP_OUTPUT}")
+                os.chown(f"{FINAL_OUTPUT}", 3000, 3000)
+                os.chmod(f"{FINAL_OUTPUT}", 0o2775)
 
                 # Update the Plex Library
-                PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL)
+                PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, HISTORY_LOG)
                 
                 # Send an NTFY notification
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")
@@ -204,7 +206,7 @@ def main():
                 # Clean up our mess
                 os.remove(input_audio)
                 os.remove(input_video)
-                os.remove(FINAL_OUTPUT)
+                os.remove(TEMP_OUTPUT)
 
                 # Remove the lock file when the script finishes
                 sys.exit(1)
