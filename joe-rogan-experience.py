@@ -2,6 +2,7 @@
 
 # Import Modules
 import os
+import shutil
 import socket
 import subprocess
 import sys
@@ -19,7 +20,7 @@ SECTION_ID = str('6')
 SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F12210&context=source%3Acontent.library~1~0')
 PLAYLIST = False
 CHANNEL = True
-INITIALIZE = True
+INITIALIZE = False
 ####[ REQUIRED VARIABLES ]####
 
 # Get the hostname, for later
@@ -70,8 +71,9 @@ def main():
             else:
                 InfoLogger(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
         print(f"Working on video {index} of {len(x.video_urls)}")
+
         VIDEO = VID.watch_url
-        print(f"Working on {VIDEO}")
+
         # Build the YouTube Object
         yt = pytubefix.YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
 
@@ -80,10 +82,10 @@ def main():
 
         # Set the video ID, title, and publish date
         ID = str(yt.video_id)
-        TITLE = str(yt.title).replace('Joe Rogan Experience #', 'Episode ').strip()
+        TITLE = str(yt.title).replace('Joe Rogan Experience ', '', 1)
         PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
         HISTORY_PATH = str(pytubefix.helpers.target_directory('/opt/projects/mytube/history'))
-        OUTPUT_FILENAME = JREFileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}", f"{TITLE}")
+        OUTPUT_FILENAME = JREFileName(f"{SERIES_PREFIX}", f"{TITLE}", f"{PUBLISH_DATE}")
         LENGTH = int(yt.length // 60)
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
         
@@ -92,9 +94,9 @@ def main():
             with open(HISTORY_LOG, "w") as f:
                 f.write(f"### {LOGGER} log ###\n")
 
+        TEMP_OUTPUT = f"{TEMP_DIR}/{OUTPUT_FILENAME}"
         FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
 
-        print("Checking if exists")
         if os.path.exists(FINAL_OUTPUT):
             InfoLogger(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!")
             if (not(CheckHistory(HISTORY_LOG, VIDEO))):
@@ -103,8 +105,7 @@ def main():
             else:
                 continue
         
-        print("Checking pattern")
-        pattern = r'(JRE MMA|Protect Our Parks)'
+        pattern = r'(JRE MMA|Protect Our Parks|Sober October)'
         if re.search(pattern, TITLE, re.IGNORECASE):
             InfoLogger(LOGGER, f"Episode \"{TITLE}\" ({ID}) is not a desired episode!")
             if not CheckHistory(HISTORY_LOG, VIDEO):
@@ -113,7 +114,6 @@ def main():
             else:
                 continue
 
-        print("Checking length")
         # Only interested in long-form interviews
         if LENGTH < 59:
             InfoLogger(LOGGER, f"Episode \"{TITLE}\" ({ID}) is too short ({LENGTH} minutes!)")
@@ -178,7 +178,7 @@ def main():
                 '-preset', 'medium',
                 '-c:a', 'aac',
                 '-strict', 'experimental',
-                FINAL_OUTPUT
+                TEMP_OUTPUT
             ]
                 
             # If an entry for the video ID does not yet exist in the history file, then download it.
@@ -196,12 +196,14 @@ def main():
                 # Clean up our mess
                 os.remove(input_audio)
                 os.remove(input_video)
-
-                # Refresh the library
-                RefreshPlex(SECTION_ID)
+                shutil.move(TEMP_OUTPUT, FINAL_OUTPUT)
+                if os.path.exists(f"{TEMP_OUTPUT}"):
+                    os.remove(f"{TEMP_OUTPUT}")
+                os.chown(f"{FINAL_OUTPUT}", 3000, 3000)
+                os.chmod(f"{FINAL_OUTPUT}", 0o2775)
 
                 # Update the Plex Library
-                PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL)
+                PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, HISTORY_LOG)
                 
                 # Send an NTFY notification
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")
