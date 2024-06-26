@@ -8,8 +8,7 @@ import subprocess
 import sys
 import pytubefix
 import pytubefix.helpers
-import re
-from libs.functions import CheckHistory, CheckProcess, JREFileName, InfoLogger, NotifyMe, RescanSeries, WriteHistory, PlexLibraryUpdate, RefreshPlex
+from libs.functions import CheckHistory, CheckProcess, JREFileName, InfoLogger, NotifyMe, WriteHistory, PlexLibraryUpdate
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('jre')

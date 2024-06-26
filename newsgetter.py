@@ -2,12 +2,13 @@
 
 # Import Modules
 import os
+import shutil
 import socket
 import subprocess
 import sys
 import pytubefix
 import pytubefix.helpers
-from libs.functions import CheckHistory, CheckProcess, NewsFileName, InfoLogger, NotifyMe, WriteHistory, PlexLibraryUpdate, RefreshPlex
+from libs.functions import CheckHistory, CheckProcess, NewsFileName, InfoLogger, NotifyMe, WriteHistory, PlexLibraryUpdate
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('nbcnews')
