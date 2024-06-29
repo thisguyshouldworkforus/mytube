@@ -372,14 +372,23 @@ def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = 
         FILEPATH = episode["Media"][0]["Part"][0]["file"]
         
         if FILEPATH == target_file_path:
+            InfoLogger(history_log, f"Filepath: '{FILEPATH}' matches Target: '{target_file_path}'")
+
             # Check and update episode metadata based on file name pattern
             pattern = re.compile(r'^.*? - .*? - (.*)(?:\s*\(\d{4}-\d{2}-\d{2}\))\.mkv$|\.mp4$')
             match = pattern.search(FILEPATH)
             if match:
+                InfoLogger(history_log, f"Filepath: '{FILEPATH}' matches pattern")
                 EPISODE_TITLE = (match.group(1)).strip()
+                InfoLogger(history_log, f"Episode Title: '{EPISODE_TITLE}'")
                 if EPISODE_TITLE != episode["title"]:
+                    InfoLogger(history_log, f"Input Title: '{EPISODE_TITLE}' episode[title]: '{episode["title"]}'")
                     EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id, history_log)
                     InfoLogger(history_log, f"Metadata for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
+                else:
+                    InfoLogger(history_log, f"Episode Title: '{EPISODE_TITLE}' already matches Metadata.")
+            else:
+                InfoLogger(history_log, f"Filepath: '{FILEPATH}' DOES NOT match pattern")
             
             # Update poster if target_file_path matches or if it's a general update
             if thumbnail_url and (not target_file_path or FILEPATH == target_file_path):
