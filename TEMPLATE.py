@@ -89,7 +89,7 @@ def main():
         # Check if the history file exists, and if not, create it
         if not os.path.exists(HISTORY_LOG):
             with open(HISTORY_LOG, "w") as f:
-                f.write(f"### {LOGGER} log ###\n")
+                f.write(f"### {LOGGER} history log ###\n")
 
         TEMP_OUTPUT = f"{TEMP_DIR}/{OUTPUT_FILENAME}"
         FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
