@@ -310,7 +310,7 @@ def GetSeriesData(rating_keys: list) -> str:
 
     return combined_data  # Return the combined data structure
 
-def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str):
+def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str, history_log: str):
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -329,9 +329,9 @@ def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str):
     episode_response = requests.put(url=episode_update_url, headers=headers, params=episode_params)
 
     if episode_response.status_code == 200:
-        print(f"Episode {rating_key} (\"{episode_title}\") updated successfully")
+        InfoLogger(history_log, f"Episode \"{episode_title}\" ({rating_key}) updated successfully")
     else:
-        print(f"Episode {rating_key} (\"{episode_title}\") failed to update")
+        InfoLogger(history_log, f"Episode \"{episode_title}\" ({rating_key}) failed to update")
 
 def RefreshPlex(section_id: str, history_log: str = None):
     headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{PLEX_TOKEN}'}
@@ -358,8 +358,8 @@ def RefreshPlex(section_id: str, history_log: str = None):
         section_name = "Music"
 
     if response.status_code == 200:
-        InfoLogger(history_log, f"Plex Library Section '{section_name}' refreshed successfully")
         time.sleep(5) # Wait 5 seconds before continuing
+        InfoLogger(history_log, f"Plex Library Section '{section_name}' refreshed successfully")
     else:
         InfoLogger(history_log, f"Plex Library Section '{section_name}' failed to refresh\n{response.text}")
 
@@ -378,8 +378,8 @@ def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = 
             if match:
                 EPISODE_TITLE = (match.group(1)).strip()
                 if EPISODE_TITLE != episode["title"]:
-                    EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id)
-                    InfoLogger(history_log, f"Metadata for episode {RATING_KEY} (\"{EPISODE_TITLE}\") updated successfully")
+                    EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id, history_log)
+                    InfoLogger(history_log, f"Metadata for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
             
             # Update poster if target_file_path matches or if it's a general update
             if thumbnail_url and (not target_file_path or FILEPATH == target_file_path):
@@ -389,8 +389,8 @@ def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = 
                 poster_response = requests.post(url=poster_update_url, headers=headers, params=poster_params)
                 
                 if poster_response.status_code == 200:
-                    InfoLogger(history_log, f"Poster for episode {RATING_KEY} (\"{EPISODE_TITLE}\") updated successfully")
+                    InfoLogger(history_log, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
                 else:
-                    InfoLogger(history_log, f"Poster for episode {RATING_KEY} (\"{EPISODE_TITLE}\") failed to update")
+                    InfoLogger(history_log, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) failed to update")
         else:
             continue
