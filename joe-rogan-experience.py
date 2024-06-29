@@ -92,7 +92,7 @@ def main():
             with open(HISTORY_LOG, "w") as f:
                 f.write(f"### {LOGGER} log ###\n")
 
-        OUTPUT_FILENAME = JREFileName(f"{SERIES_PREFIX}", f"{TITLE}", f"{PUBLISH_DATE}", f"{HISTORY_LOG}")
+        OUTPUT_FILENAME = JREFileName(f"{SERIES_PREFIX}", f"{TITLE}", f"{PUBLISH_DATE}", f"{LOGGER}")
 
         TEMP_OUTPUT = f"{TEMP_DIR}/{OUTPUT_FILENAME}"
         FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
@@ -203,7 +203,7 @@ def main():
                 os.chmod(f"{FINAL_OUTPUT}", 0o2775)
 
                 # Update the Plex Library
-                PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, HISTORY_LOG)
+                PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER)
                 
                 # Send an NTFY notification
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")

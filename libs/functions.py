@@ -115,7 +115,7 @@ def FileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE:
     # return the filename
     return filename
 
-def JREFileName(SERIES_PREFIX: str = None, EPISODE_TITLE: str = None, PUBLISH_DATE: str = None, HISTORY_LOG: str = None):
+def JREFileName(SERIES_PREFIX: str = None, EPISODE_TITLE: str = None, PUBLISH_DATE: str = None, LOGGER: str = None):
     # Initialize variables with default values
     PAD = "0000"
     EPISODE_NUMBER = "0000"
@@ -130,9 +130,9 @@ def JREFileName(SERIES_PREFIX: str = None, EPISODE_TITLE: str = None, PUBLISH_DA
             EPISODE_NUMBER = match.group(1)
             GUESTS = match.group(2).replace('-', '').strip()
         else:
-            InfoLogger(HISTORY_LOG, f"\"{EPISODE_TITLE}\" does not match the expected pattern")
+            InfoLogger(LOGGER, f"\"{EPISODE_TITLE}\" does not match the expected pattern")
     except Exception as e:
-        InfoLogger(HISTORY_LOG, f"\"{EPISODE_TITLE}\" generated an error: {e}")
+        InfoLogger(LOGGER, f"\"{EPISODE_TITLE}\" generated an error: {e}")
 
     try:
         # Parse the PUBLISH_DATE to a datetime object
@@ -146,10 +146,10 @@ def JREFileName(SERIES_PREFIX: str = None, EPISODE_TITLE: str = None, PUBLISH_DA
             filename = f"{SERIES_PREFIX}S{year}E{PAD} - #{EPISODE_NUMBER} {GUESTS} ({PUBLISH_DATE}).mkv"
             return filename
         else:
-            InfoLogger(HISTORY_LOG, "Episode title is missing")
+            InfoLogger(LOGGER, "Episode title is missing")
             return None
     except Exception as e:
-        InfoLogger(HISTORY_LOG, f"Error parsing date \"{PUBLISH_DATE}\": {e}")
+        InfoLogger(LOGGER, f"Error parsing date \"{PUBLISH_DATE}\": {e}")
         return None
 
 def NotifyMe(title: str = 'New Message', priority: str = 3, tags: str = 'incoming_envelope', message: str = 'No message included'):
@@ -310,7 +310,7 @@ def GetSeriesData(rating_keys: list) -> str:
 
     return combined_data  # Return the combined data structure
 
-def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str, history_log: str):
+def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str, LOGGER: str):
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -329,11 +329,11 @@ def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str, history_
     episode_response = requests.put(url=episode_update_url, headers=headers, params=episode_params)
 
     if episode_response.status_code == 200:
-        InfoLogger(history_log, f"Episode \"{episode_title}\" ({rating_key}) updated successfully")
+        InfoLogger(LOGGER, f"Episode \"{episode_title}\" ({rating_key}) updated successfully")
     else:
-        InfoLogger(history_log, f"Episode \"{episode_title}\" ({rating_key}) failed to update")
+        InfoLogger(LOGGER, f"Episode \"{episode_title}\" ({rating_key}) failed to update")
 
-def RefreshPlex(section_id: str, history_log: str = None):
+def RefreshPlex(section_id: str, LOGGER: str = None):
     headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{PLEX_TOKEN}'}
     url = f"http://plex.int.snyderfamily.co:32400/library/sections/{section_id}/refresh"
     payload = {}
@@ -359,12 +359,12 @@ def RefreshPlex(section_id: str, history_log: str = None):
 
     if response.status_code == 200:
         time.sleep(5) # Wait 5 seconds before continuing
-        InfoLogger(history_log, f"Plex Library Section '{section_name}' refreshed successfully")
+        InfoLogger(LOGGER, f"Plex Library Section '{section_name}' refreshed successfully")
     else:
-        InfoLogger(history_log, f"Plex Library Section '{section_name}' failed to refresh\n{response.text}")
+        InfoLogger(LOGGER, f"Plex Library Section '{section_name}' failed to refresh\n{response.text}")
 
-def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = None, thumbnail_url: str = None, history_log: str = None):
-    RefreshPlex(section_id, history_log)
+def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = None, thumbnail_url: str = None, LOGGER: str = None):
+    RefreshPlex(section_id, LOGGER)
     series_data = GetSeriesData(GetRatingKeys(SERIES_URL))
     
     for episode in series_data["MediaContainer"]["Metadata"]:
@@ -372,23 +372,23 @@ def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = 
         FILEPATH = episode["Media"][0]["Part"][0]["file"]
         
         if FILEPATH == target_file_path:
-            InfoLogger(history_log, f"Filepath: '{FILEPATH}' matches Target: '{target_file_path}'")
+            InfoLogger(LOGGER, f"Filepath: '{FILEPATH}' matches Target: '{target_file_path}'")
 
             # Check and update episode metadata based on file name pattern
             pattern = re.compile(r'^.*? - .*? - (.*)(?:\s*\(\d{4}-\d{2}-\d{2}\))\.mkv$|\.mp4$')
             match = pattern.search(FILEPATH)
             if match:
-                InfoLogger(history_log, f"Filepath: '{FILEPATH}' matches pattern")
+                InfoLogger(LOGGER, f"Filepath: '{FILEPATH}' matches pattern")
                 EPISODE_TITLE = (match.group(1)).strip()
-                InfoLogger(history_log, f"Episode Title: '{EPISODE_TITLE}'")
+                InfoLogger(LOGGER, f"Episode Title: '{EPISODE_TITLE}'")
                 if EPISODE_TITLE != episode["title"]:
-                    InfoLogger(history_log, f"Input Title: '{EPISODE_TITLE}' episode[title]: '{episode["title"]}'")
-                    EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id, history_log)
-                    InfoLogger(history_log, f"Metadata for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
+                    InfoLogger(LOGGER, f"Input Title: '{EPISODE_TITLE}' episode[title]: '{episode["title"]}'")
+                    EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id, LOGGER)
+                    InfoLogger(LOGGER, f"Metadata for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
                 else:
-                    InfoLogger(history_log, f"Episode Title: '{EPISODE_TITLE}' already matches Metadata.")
+                    InfoLogger(LOGGER, f"Episode Title: '{EPISODE_TITLE}' already matches Metadata.")
             else:
-                InfoLogger(history_log, f"Filepath: '{FILEPATH}' DOES NOT match pattern")
+                InfoLogger(LOGGER, f"Filepath: '{FILEPATH}' DOES NOT match pattern")
             
             # Update poster if target_file_path matches or if it's a general update
             if thumbnail_url and (not target_file_path or FILEPATH == target_file_path):
@@ -398,8 +398,8 @@ def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = 
                 poster_response = requests.post(url=poster_update_url, headers=headers, params=poster_params)
                 
                 if poster_response.status_code == 200:
-                    InfoLogger(history_log, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
+                    InfoLogger(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
                 else:
-                    InfoLogger(history_log, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) failed to update")
+                    InfoLogger(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) failed to update")
         else:
             continue
