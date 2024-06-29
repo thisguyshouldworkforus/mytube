@@ -1,19 +1,21 @@
-#!/opt/projects/mytube/venv/bin/python3
+def GetPlexToken():
 
-# Import Modules
-import logging
-import subprocess
-import re
-import requests
-import datetime
-import os
-import time
+    # Import modules
+    import os
 
-TOKEN_PATH = os.path.join(os.environ['HOME'], '.config', '.credentials', 'plex.token')
-with open(TOKEN_PATH, 'r') as f:
-    PLEX_TOKEN = f.readline().strip()
+    TOKEN_PATH = os.path.join(os.environ['HOME'], '.config', '.credentials', 'plex.token')
+    with open(TOKEN_PATH, 'r') as f:
+        PLEX_TOKEN = f.readline().strip()
+    
+    return PLEX_TOKEN
 
 def InfoLogger(LOG: str = None, message: str =None):
+    
+    # Import Modules
+    import logging
+    import datetime
+    import os
+
     log_directory = '/opt/projects/mytube/logs'
     os.makedirs(log_directory, exist_ok=True)
 
@@ -36,6 +38,10 @@ def InfoLogger(LOG: str = None, message: str =None):
 
 # This is a more robust way to check if the process is currently running
 def CheckProcess(pidfile):
+    
+    # Import Modules
+    import subprocess
+
     try:
         subprocess.run(['pgrep', '--pidfile', pidfile], check=True)
         return True
@@ -43,6 +49,11 @@ def CheckProcess(pidfile):
         return False
 
 def CheckHistory(FILE: str = None, URL: str = None):
+    
+    # Import Modules
+    import re
+
+
     # Regular expression pattern to capture YouTube video ID
     pattern = re.compile(r'[?&]v=([-_\w]+)')
     
@@ -67,6 +78,10 @@ def CheckHistory(FILE: str = None, URL: str = None):
         return bool(id_pattern.search(history_content))
 
 def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None):
+
+    # Import Modules
+    import datetime
+
     # Parse the PUBLISH_DATE to a datetime object
     publish_date = datetime.datetime.strptime(PUBLISH_DATE, "%Y-%m-%d")
 
@@ -92,6 +107,9 @@ def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None):
     return filename
 
 def FileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE: str = None):
+
+    # Import Modules
+    import datetime
     from pytubefix.helpers import safe_filename
 
     # Parse the PUBLISH_DATE to a datetime object
@@ -116,6 +134,11 @@ def FileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE:
     return filename
 
 def JREFileName(SERIES_PREFIX: str = None, EPISODE_TITLE: str = None, PUBLISH_DATE: str = None, LOGGER: str = None):
+    
+    # Import Modules
+    import re
+    import datetime
+
     # Initialize variables with default values
     PAD = "0000"
     EPISODE_NUMBER = "0000"
@@ -154,6 +177,10 @@ def JREFileName(SERIES_PREFIX: str = None, EPISODE_TITLE: str = None, PUBLISH_DA
 
 def NotifyMe(title: str = 'New Message', priority: str = 3, tags: str = 'incoming_envelope', message: str = 'No message included'):
     
+    # Import Modules
+    import requests
+    import os
+
     # Get the NTFY url to post messages to
     ## I don't really want this URL to be public, as I know
     ## a troll will start sending me bullshit and ruin my day.
@@ -191,6 +218,10 @@ def NotifyMe(title: str = 'New Message', priority: str = 3, tags: str = 'incomin
     requests.post(NTFY_URL, data=data, headers=headers)
 
 def WriteHistory(FILE: str = None, URL: str = None):
+    
+    # Import Modules
+    import re
+    import datetime
 
     # Construct the date object
     TODAY = (datetime.datetime.now()).strftime("%Y%m%d")
@@ -215,6 +246,11 @@ def WriteHistory(FILE: str = None, URL: str = None):
         history_file.write(f"youtube {HISTORY_ID}\n")
 
 def RescanSeries(SERIES_ID):
+
+    # Import Modules
+    import requests
+    import os
+
     # Get API Key
     # Open the file for reading ('r' mode)
     SONARR_PATH = os.path.join(os.environ['HOME'], '.config', '.credentials', 'sonarr.api')
@@ -248,6 +284,11 @@ def RescanSeries(SERIES_ID):
         print(f"There was an error!\n{e}")
 
 def GetRatingKeys(url: str):
+
+    # Import Modules
+    import requests
+    import re
+
     # Correct the regular expression for extracting the rating key from the URL.
     match = re.search(r'key=%2Flibrary%2Fmetadata%2F(\d+)', url)
     if match:
@@ -258,7 +299,7 @@ def GetRatingKeys(url: str):
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'X-Plex-Token': f'{PLEX_TOKEN}'
+        'X-Plex-Token': f'{GetPlexToken()}'
     }
     rating_key_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{rating_key}/children"
 
@@ -281,10 +322,14 @@ def GetRatingKeys(url: str):
     return rating_keys  # Return the list of rating keys
 
 def GetSeriesData(rating_keys: list) -> str:
+
+    # Import Modules
+    import requests
+
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'X-Plex-Token': f'{PLEX_TOKEN}'
+        'X-Plex-Token': f'{GetPlexToken()}'
     }
 
     # Initialize the combined data structure based on the provided structure
@@ -311,10 +356,14 @@ def GetSeriesData(rating_keys: list) -> str:
     return combined_data  # Return the combined data structure
 
 def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str, LOGGER: str):
+
+    # Import Modules
+    import requests
+
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'X-Plex-Token': f'{PLEX_TOKEN}'
+        'X-Plex-Token': f'{GetPlexToken()}'
     }
 
     episode_params = {
@@ -334,7 +383,12 @@ def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str, LOGGER: 
         InfoLogger(LOGGER, f"Episode \"{episode_title}\" ({rating_key}) failed to update")
 
 def RefreshPlex(section_id: str, LOGGER: str = None):
-    headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{PLEX_TOKEN}'}
+
+    # Import Modules
+    import requests
+    import time
+
+    headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{GetPlexToken()}'}
     url = f"http://plex.int.snyderfamily.co:32400/library/sections/{section_id}/refresh"
     payload = {}
     response = requests.request("GET", url, headers=headers, data=payload)
@@ -364,6 +418,11 @@ def RefreshPlex(section_id: str, LOGGER: str = None):
         InfoLogger(LOGGER, f"Plex Library Section '{section_name}' failed to refresh\n{response.text}")
 
 def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = None, thumbnail_url: str = None, LOGGER: str = None):
+    
+    # Import Modules
+    import re
+    import requests
+
     RefreshPlex(section_id, LOGGER)
     series_data = GetSeriesData(GetRatingKeys(SERIES_URL))
     
@@ -393,7 +452,7 @@ def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = 
             # Update poster if target_file_path matches or if it's a general update
             if thumbnail_url and (not target_file_path or FILEPATH == target_file_path):
                 poster_update_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{RATING_KEY}/posters"
-                headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{PLEX_TOKEN}'}
+                headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{GetPlexToken()}'}
                 poster_params = {'url': f'{thumbnail_url}'}
                 poster_response = requests.post(url=poster_update_url, headers=headers, params=poster_params)
                 
