@@ -8,7 +8,7 @@ import subprocess
 import sys
 import pytubefix
 import pytubefix.helpers
-from libs.functions import CheckHistory, CheckProcess, NewsFileName, InfoLogger, NotifyMe, WriteHistory, PlexLibraryUpdate
+from libs.functions import ProofOfLife, CheckHistory, CheckProcess, NewsFileName, InfoLogger, NotifyMe, WriteHistory, PlexLibraryUpdate
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('nbcnews')

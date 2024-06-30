@@ -462,3 +462,25 @@ def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = 
                     InfoLogger(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) failed to update")
         else:
             continue
+
+def ProofOfLife():
+
+    # Import modules
+    import requests
+    from libs.functions import GetPlexToken
+
+    HEADERS = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Plex-Token': f'{GetPlexToken()}'
+    }
+
+    URL = 'http://plex.int.snyderfamily.co:32400'
+
+    # Check to see if Plex Server is alive
+    try:
+        response = requests.get(url=URL, headers=HEADERS).json()
+        if response:
+            return True
+    except Exception:
+        return False
