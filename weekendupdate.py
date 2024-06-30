@@ -10,6 +10,10 @@ import pytubefix
 import pytubefix.helpers
 from libs.functions import ProofOfLife, CheckHistory, CheckProcess, FileName, InfoLogger, NotifyMe, WriteHistory, PlexLibraryUpdate
 
+if not ProofOfLife:
+    sys.exit(1) # Plex Server is offline, so don't add new media to its libraries.
+
+
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('weekendupdate')
 OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.shows/SNL Weekend Update (1975) {tvdb-76177}'))

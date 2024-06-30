@@ -11,6 +11,9 @@ import pytubefix
 import pytubefix.helpers
 from libs.functions import ProofOfLife, CheckHistory, CheckProcess, JREFileName, InfoLogger, NotifyMe, WriteHistory, PlexLibraryUpdate
 
+if not ProofOfLife:
+    sys.exit(1) # Plex Server is offline, so don't add new media to its libraries.
+
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('jre')
 OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.docs/The Joe Rogan Experience (2009) {tvdb-326959}'))

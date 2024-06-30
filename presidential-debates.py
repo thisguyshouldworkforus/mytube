@@ -10,6 +10,9 @@ import pytubefix
 import pytubefix.helpers
 from libs.functions import ProofOfLife, CheckHistory, CheckProcess, FileName, InfoLogger, NotifyMe, WriteHistory, PlexLibraryUpdate
 
+if not ProofOfLife:
+    sys.exit(1) # Plex Server is offline, so don't add new media to its libraries.
+
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('debate')
 OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.docs/Presidential Debates (2024) {tvdb-000000}'))
