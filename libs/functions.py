@@ -283,7 +283,7 @@ def RescanSeries(SERIES_ID):
     except Exception as e:
         print(f"There was an error!\n{e}")
 
-def GetRatingKeys(url: str):
+def GetRatingKeys(url: str, LOGGER: str):
 
     # Import Modules
     import requests
@@ -307,21 +307,23 @@ def GetRatingKeys(url: str):
     data = response.json()
 
     rating_keys = []  # Initialize an empty list for rating keys
+    if data:
+        # Check if 'Metadata' exists to avoid KeyError
+        if "Metadata" in data["MediaContainer"]:
+            # Iterate over the items in the response and collect their rating keys
+            for item in data["MediaContainer"]["Metadata"]:
+                # Append each rating key to the list
+                rating_keys.append(item["ratingKey"])
 
-    # Check if 'Metadata' exists to avoid KeyError
-    if "Metadata" in data["MediaContainer"]:
-        # Iterate over the items in the response and collect their rating keys
-        for item in data["MediaContainer"]["Metadata"]:
-            # Append each rating key to the list
-            rating_keys.append(item["ratingKey"])
+        # If no rating keys were found, you could choose to return a message or an empty list
+        if not rating_keys:
+            InfoLogger(LOGGER, "No rating keys found")
+            return False
 
-    # If no rating keys were found, you could choose to return a message or an empty list
-    if not rating_keys:
-        return "No rating keys found"
+        return rating_keys  # Return the list of rating keys
+    return False
 
-    return rating_keys  # Return the list of rating keys
-
-def GetSeriesData(rating_keys: list) -> str:
+def GetSeriesData(rating_keys: list, LOGGER: str):
 
     # Import Modules
     import requests
@@ -341,19 +343,29 @@ def GetSeriesData(rating_keys: list) -> str:
         }
     }
 
-    for key in rating_keys:
-        series_data_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{key}/children"
-        response = requests.get(url=series_data_url, headers=headers)
-        data = response.json()
+    if rating_keys:
+        for key in rating_keys:
+            series_data_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{key}/children"
+            response = requests.get(url=series_data_url, headers=headers)
+            data = response.json()
 
-        if "MediaContainer" in data and "Metadata" in data["MediaContainer"]:
-            # Extend the combined Metadata list with metadata from this rating key
-            combined_data["MediaContainer"]["Metadata"].extend(data["MediaContainer"]["Metadata"])
+            if data:
+                if "MediaContainer" in data and "Metadata" in data["MediaContainer"]:
+                    # Extend the combined Metadata list with metadata from this rating key
+                    combined_data["MediaContainer"]["Metadata"].extend(data["MediaContainer"]["Metadata"])
+                else:
+                    InfoLogger(LOGGER, "JSON Data Structure not in the expected format!")
+                    return False
+            else:
+                InfoLogger(LOGGER, "Malformed JSON Response.")
+                return False
 
-    # Update the size to reflect the total number of Metadata items
-    combined_data["MediaContainer"]["size"] = len(combined_data["MediaContainer"]["Metadata"])
-
-    return combined_data  # Return the combined data structure
+        # Update the size to reflect the total number of Metadata items
+        combined_data["MediaContainer"]["size"] = len(combined_data["MediaContainer"]["Metadata"])
+        return combined_data  # Return the combined data structure
+    else:
+        InfoLogger(LOGGER, "No ratings keys found. Could not construct JSON Data Structure.")
+        return False
 
 def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str, LOGGER: str):
 
@@ -379,8 +391,10 @@ def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str, LOGGER: 
 
     if episode_response.status_code == 200:
         InfoLogger(LOGGER, f"Episode \"{episode_title}\" ({rating_key}) updated successfully")
+        return True
     else:
         InfoLogger(LOGGER, f"Episode \"{episode_title}\" ({rating_key}) failed to update")
+        return False
 
 def RefreshPlex(section_id: str, LOGGER: str = None):
 
@@ -414,8 +428,10 @@ def RefreshPlex(section_id: str, LOGGER: str = None):
     if response.status_code == 200:
         time.sleep(5) # Wait 5 seconds before continuing
         InfoLogger(LOGGER, f"Plex Library Section '{section_name}' refreshed successfully")
+        return True
     else:
         InfoLogger(LOGGER, f"Plex Library Section '{section_name}' failed to refresh\n{response.text}")
+        return False
 
 def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = None, thumbnail_url: str = None, LOGGER: str = None):
     
@@ -423,45 +439,49 @@ def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = 
     import re
     import requests
 
-    RefreshPlex(section_id, LOGGER)
-    series_data = GetSeriesData(GetRatingKeys(SERIES_URL))
-    
-    for episode in series_data["MediaContainer"]["Metadata"]:
-        RATING_KEY = episode["ratingKey"]
-        FILEPATH = episode["Media"][0]["Part"][0]["file"]
+    if RefreshPlex(section_id, LOGGER):
+        rating_keys = GetRatingKeys(SERIES_URL, LOGGER)
+        series_data = GetSeriesData(rating_keys, LOGGER)
         
-        if FILEPATH == target_file_path:
-            InfoLogger(LOGGER, f"Filepath: '{FILEPATH}' matches Target: '{target_file_path}'")
-
-            # Check and update episode metadata based on file name pattern
-            pattern = re.compile(r'^.*? - .*? - (.*)(?:\s*\(\d{4}-\d{2}-\d{2}\))\.mkv$|\.mp4$')
-            match = pattern.search(FILEPATH)
-            if match:
-                InfoLogger(LOGGER, f"Filepath: '{FILEPATH}' matches pattern")
-                EPISODE_TITLE = (match.group(1)).strip()
-                InfoLogger(LOGGER, f"Episode Title: '{EPISODE_TITLE}'")
-                if EPISODE_TITLE != episode["title"]:
-                    InfoLogger(LOGGER, f"Input Title: '{EPISODE_TITLE}' episode[title]: '{episode["title"]}'")
-                    EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id, LOGGER)
-                    InfoLogger(LOGGER, f"Metadata for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
-                else:
-                    InfoLogger(LOGGER, f"Episode Title: '{EPISODE_TITLE}' already matches Metadata.")
-            else:
-                InfoLogger(LOGGER, f"Filepath: '{FILEPATH}' DOES NOT match pattern")
-            
-            # Update poster if target_file_path matches or if it's a general update
-            if thumbnail_url and (not target_file_path or FILEPATH == target_file_path):
-                poster_update_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{RATING_KEY}/posters"
-                headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{GetPlexToken()}'}
-                poster_params = {'url': f'{thumbnail_url}'}
-                poster_response = requests.post(url=poster_update_url, headers=headers, params=poster_params)
+        if series_data:
+            for episode in series_data["MediaContainer"]["Metadata"]:
+                RATING_KEY = episode["ratingKey"]
+                FILEPATH = episode["Media"][0]["Part"][0]["file"]
                 
-                if poster_response.status_code == 200:
-                    InfoLogger(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
+                if FILEPATH == target_file_path:
+                    InfoLogger(LOGGER, f"Filepath: '{FILEPATH}' matches Target: '{target_file_path}'")
+
+                    # Check and update episode metadata based on file name pattern
+                    pattern = re.compile(r'^.*? - .*? - (.*)(?:\s*\(\d{4}-\d{2}-\d{2}\))\.mkv$|\.mp4$')
+                    match = pattern.search(FILEPATH)
+                    if match:
+                        # InfoLogger(LOGGER, f"Filepath: '{FILEPATH}' matches pattern")
+                        EPISODE_TITLE = (match.group(1)).strip()
+                        InfoLogger(LOGGER, f"Episode Title: '{EPISODE_TITLE}'")
+                        if EPISODE_TITLE != episode["title"]:
+                            InfoLogger(LOGGER, f"Input Title: '{EPISODE_TITLE}' episode[title]: '{episode["title"]}'")
+                            if EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id, LOGGER):
+                                InfoLogger(LOGGER, f"Metadata for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
+                        else:
+                            InfoLogger(LOGGER, f"Episode Title: '{EPISODE_TITLE}' already matches Metadata.")
+                    else:
+                        InfoLogger(LOGGER, f"Filepath: '{FILEPATH}' DOES NOT match pattern")
+                    
+                    # Update poster if target_file_path matches or if it's a general update
+                    if thumbnail_url and (not target_file_path or FILEPATH == target_file_path):
+                        poster_update_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{RATING_KEY}/posters"
+                        headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{GetPlexToken()}'}
+                        poster_params = {'url': f'{thumbnail_url}'}
+                        poster_response = requests.post(url=poster_update_url, headers=headers, params=poster_params)
+                        
+                        if poster_response.status_code == 200:
+                            InfoLogger(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
+                        else:
+                            InfoLogger(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) failed to update")
                 else:
-                    InfoLogger(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) failed to update")
-        else:
-            continue
+                    continue
+    else:
+        InfoLogger(LOGGER, "No Series Data Was Returned")
 
 def ProofOfLife():
 
