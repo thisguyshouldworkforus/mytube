@@ -367,7 +367,7 @@ def GetSeriesData(rating_keys: list, LOGGER: str):
         InfoLogger(LOGGER, "No ratings keys found. Could not construct JSON Data Structure.")
         return False
 
-def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str, LOGGER: str):
+def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str, LOGGER: str, DESCRIPTION: str):
 
     # Import Modules
     import requests
@@ -383,7 +383,8 @@ def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str, LOGGER: 
         'id': f'{rating_key}', # This is the ratingId of the episode
         'includeExternalMedia': '1',
         'title.value': f'{episode_title}',
-        'titleSort.value': f'{episode_title}'
+        'titleSort.value': f'{episode_title}',
+        'summary.value': f'{DESCRIPTION}'
     }
 
     episode_update_url = f"http://plex.int.snyderfamily.co:32400/library/sections/{section_id}/all"
@@ -433,7 +434,7 @@ def RefreshPlex(section_id: str, LOGGER: str = None):
         InfoLogger(LOGGER, f"Plex Library Section '{section_name}' failed to refresh\n{response.text}")
         return False
 
-def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = None, thumbnail_url: str = None, LOGGER: str = None):
+def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = None, thumbnail_url: str = None, LOGGER: str = None, DESCRIPTION: str = None):
     
     # Import Modules
     import re
@@ -460,7 +461,7 @@ def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = 
                         InfoLogger(LOGGER, f"Episode Title: '{EPISODE_TITLE}'")
                         if EPISODE_TITLE != episode["title"]:
                             InfoLogger(LOGGER, f"Input Title: '{EPISODE_TITLE}' episode[title]: '{episode["title"]}'")
-                            if EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id, LOGGER):
+                            if EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id, LOGGER, DESCRIPTION):
                                 InfoLogger(LOGGER, f"Metadata for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
                         else:
                             InfoLogger(LOGGER, f"Episode Title: '{EPISODE_TITLE}' already matches Metadata.")
