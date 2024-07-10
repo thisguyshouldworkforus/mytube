@@ -89,7 +89,9 @@ def main():
         HISTORY_PATH = str(pytubefix.helpers.target_directory('/opt/projects/mytube/history'))
         LENGTH = int(yt.length // 60)
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
-        
+        THUMBNAIL_URL = yt.thumbnail_url
+        DESCRIPTION = f"{yt.description}\n\n\n\nVideo URL: {VIDEO}\nThumbnail URL: {THUMBNAIL_URL}"
+
         # Check if the history file exists, and if not, create it
         if not os.path.exists(HISTORY_LOG):
             with open(HISTORY_LOG, "w") as f:
@@ -104,8 +106,10 @@ def main():
             InfoLogger(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!")
             if (not(CheckHistory(HISTORY_LOG, VIDEO))):
                 WriteHistory(HISTORY_LOG, VIDEO)
+                PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
                 continue
             else:
+                PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
                 continue
         
         pattern = r'(JRE MMA|Protect Our Parks|Sober October)'
@@ -137,9 +141,6 @@ def main():
 
             InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) was NOT in history, and will be downloaded.")
 
-            # Construct FFMPEG objects
-            THUMBNAIL_URL = yt.thumbnail_url
-
             # Download the audio stream, try 160kbps, if that fails, try 128kbps. If that fails, skip it.
             try:
                 input_audio = yt.streams.filter(adaptive=True, mime_type="audio/webm", abr="160kbps").first().download(f"{TEMP_DIR}",f"{PUBLISH_DATE}.audio.webm")
@@ -165,7 +166,7 @@ def main():
                         os.remove(input_audio)
                     WriteHistory(HISTORY_LOG, VIDEO)
                     continue
-                
+            
             # Check to make sure the audio and video files exist
             if not (os.path.exists(input_audio) or (os.path.exists(input_video))):
                 InfoLogger(LOGGER, f"Required media does not exist.")
@@ -206,7 +207,7 @@ def main():
                 os.chmod(f"{FINAL_OUTPUT}", 0o2775)
 
                 # Update the Plex Library
-                PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER)
+                PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
                 
                 # Send an NTFY notification
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")
