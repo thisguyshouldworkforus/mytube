@@ -96,6 +96,8 @@ def main():
         HISTORY_PATH = str(pytubefix.helpers.target_directory('/opt/projects/mytube/history'))
         OUTPUT_FILENAME = FileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}", f"{TITLE}")
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
+        THUMBNAIL_URL = yt.thumbnail_url
+        DESCRIPTION = f"{yt.description}\n\n\n\nVideo URL: {VIDEO}\nThumbnail URL: {THUMBNAIL_URL}"
         
         # Check if the history file exists, and if not, create it
         if not os.path.exists(HISTORY_LOG):
@@ -123,9 +125,6 @@ def main():
         if (not(CheckHistory(HISTORY_LOG, VIDEO))):
 
             InfoLogger(LOGGER, f"{rev_index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) was NOT in history, and will be downloaded.")
-
-            # Construct FFMPEG objects
-            THUMBNAIL_URL = yt.thumbnail_url
 
             # Download the audio stream, try 160kbps, if that fails, try 128kbps. If that fails, skip it.
             try:

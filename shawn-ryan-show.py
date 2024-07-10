@@ -90,6 +90,9 @@ def main():
         OUTPUT_FILENAME = FileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}", f"{TITLE}")
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
         LENGTH = int(yt.length // 60)
+        THUMBNAIL_URL = yt.thumbnail_url
+        DESCRIPTION = f"{yt.description}\n\n\n\nVideo URL: {VIDEO}\nThumbnail URL: {THUMBNAIL_URL}"
+        
         # Check if the history file exists, and if not, create it
         if not os.path.exists(HISTORY_LOG):
             with open(HISTORY_LOG, "w") as f:
@@ -135,9 +138,6 @@ def main():
         if (not(CheckHistory(HISTORY_LOG, VIDEO))):
 
             InfoLogger(LOGGER, f"{index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) was NOT in history, and will be downloaded.")
-
-            # Construct FFMPEG objects
-            THUMBNAIL_URL = yt.thumbnail_url
 
             # Download the audio stream, try 160kbps, if that fails, try 128kbps. If that fails, skip it.
             try:
