@@ -10,10 +10,6 @@ import pytubefix
 import pytubefix.helpers
 from libs.functions import ProofOfLife, CheckHistory, CheckProcess, FileName, LoggIt, NotifyMe, WriteHistory, PlexLibraryUpdate
 
-if not ProofOfLife:
-    sys.exit(1) # Plex Server is offline, so don't add new media to its libraries.
-
-
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('weekendupdate')
 OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.shows/SNL Weekend Update (1975) {tvdb-76177}'))
@@ -25,6 +21,10 @@ PLAYLIST = True
 CHANNEL = False
 INITIALIZE = False
 ####[ REQUIRED VARIABLES ]####
+
+if not ProofOfLife:
+    LoggIt(LOGGER, "Plex Server is offline, so don't add new media to its libraries.", "error")
+    sys.exit(1)
 
 # Get the hostname, for later
 THISBOX = socket.gethostname()
@@ -128,8 +128,7 @@ def main():
                 try:
                     input_audio = yt.streams.filter(adaptive=True, mime_type="audio/webm", abr="128kbps").first().download(f"{TEMP_DIR}",f"{PUBLISH_DATE}.audio.webm")
                 except Exception:
-                    LoggIt(LOGGER, f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})")
-                    NotifyMe('Error!','5','face_with_spiral_eyes',f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})")
+                    LoggIt(LOGGER, f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})", "error")
                     WriteHistory(HISTORY_LOG, VIDEO)
                     continue
 
@@ -140,8 +139,7 @@ def main():
                 try:
                     input_video = yt.streams.filter(adaptive=True, mime_type="video/webm",res="720p").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.video.webm")
                 except Exception:
-                    LoggIt(LOGGER, f"There was an error downloading the video stream for \"{TITLE}\" ({ID})")
-                    NotifyMe('Error!','5','face_with_spiral_eyes',f"There was an error downloading the video stream for \"{TITLE}\" ({ID})")
+                    LoggIt(LOGGER, f"There was an error downloading the video stream for \"{TITLE}\" ({ID})", "error")
                     if os.path.exists(input_audio):
                         os.remove(input_audio)
                     WriteHistory(HISTORY_LOG, VIDEO)
@@ -149,7 +147,7 @@ def main():
                 
             # Check to make sure the audio and video files exist
             if not (os.path.exists(input_audio) or (os.path.exists(input_video))):
-                LoggIt(LOGGER, f"Required media does not exist.")
+                LoggIt(LOGGER, f"Required media does not exist.", "warn")
                 continue
 
             # Command to mux video and audio will differ, depending on the hostname
@@ -193,10 +191,7 @@ def main():
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")
             else:
                 # Log the error output of the FFMPEG command
-                LoggIt(LOGGER, OUTPUT.stderr)
-
-                # Send an NTFY notification
-                NotifyMe('Error!','5','face_with_spiral_eyes','There was an error in the FFMPEG')
+                LoggIt(LOGGER, OUTPUT.stderr, "error")
 
                 # Clean up our mess
                 os.remove(input_audio)

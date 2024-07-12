@@ -10,9 +10,6 @@ import pytubefix
 import pytubefix.helpers
 from libs.functions import ProofOfLife, CheckHistory, CheckProcess, NewsFileName, LoggIt, NotifyMe, WriteHistory, PlexLibraryUpdate
 
-if not ProofOfLife:
-    sys.exit(1) # Plex Server is offline, so don't add new media to its libraries.
-
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('nbcnews')
 OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.shows/NBC Nightly News with Lester Holt (2013) {tvdb-139911}'))
@@ -24,6 +21,10 @@ PLAYLIST = True
 CHANNEL = False
 INITIALIZE = False
 ####[ REQUIRED VARIABLES ]####
+
+if not ProofOfLife:
+    LoggIt(LOGGER, "Plex Server is offline, so don't add new media to its libraries.", "error")
+    sys.exit(1)
 
 # Get the hostname, for later
 THISBOX = socket.gethostname()

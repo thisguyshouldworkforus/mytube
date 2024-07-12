@@ -10,9 +10,6 @@ import pytubefix
 import pytubefix.helpers
 from libs.functions import ProofOfLife, CheckHistory, CheckProcess, FileName, LoggIt, NotifyMe, WriteHistory, PlexLibraryUpdate
 
-if not ProofOfLife:
-    sys.exit(1) # Plex Server is offline, so don't add new media to its libraries.
-
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('trek')
 OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.shows/Trek, Actually (2016) {tvdb-000000}'))
@@ -23,6 +20,10 @@ SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/
 PLAYLIST = True
 CHANNEL = False
 ####[ REQUIRED VARIABLES ]####
+
+if not ProofOfLife:
+    LoggIt(LOGGER, "Plex Server is offline, so don't add new media to its libraries.", "error")
+    sys.exit(1)
 
 # Get the hostname, for later
 THISBOX = socket.gethostname()
