@@ -19,10 +19,10 @@ OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.shows/NBC Ni
 SERIES_PREFIX = str("NBC Nightly News with Lester Holt (2013) - ")
 YOUTUBE_URL = str('https://www.youtube.com/playlist?list=PL0tDb4jw6kPymVj5xNNha5PezudD5Qw9L')
 SECTION_ID = str('5')
-SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F37103&context=source%3Acontent.library~0~9')
+SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F48041&context=source%3Acontent.library~6~9')
 PLAYLIST = True
 CHANNEL = False
-INITIALIZE = False
+INITIALIZE = True
 ####[ REQUIRED VARIABLES ]####
 
 # Get the hostname, for later
@@ -86,7 +86,7 @@ def main():
         TITLE = str(yt.title).strip()
         PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
         HISTORY_PATH = str(pytubefix.helpers.target_directory('/opt/projects/mytube/history'))
-        OUTPUT_FILENAME = NewsFileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}")
+        OUTPUT_FILENAME = NewsFileName(SERIES_PREFIX, PUBLISH_DATE, TITLE)
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
         THUMBNAIL_URL = yt.thumbnail_url
         DESCRIPTION = f"{yt.description}\n\n\n\nVideo URL: {VIDEO}\nThumbnail URL: {THUMBNAIL_URL}"
