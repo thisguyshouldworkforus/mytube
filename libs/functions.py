@@ -9,8 +9,50 @@ def GetPlexToken():
     
     return PLEX_TOKEN
 
-def InfoLogger(LOG: str = None, message: str =None):
+def NotifyMe(title: str = 'New Message', priority: str = 3, tags: str = 'incoming_envelope', message: str = 'No message included'):
     
+    # Import Modules
+    import requests
+    import os
+
+    # Get the NTFY url to post messages to
+    ## I don't really want this URL to be public, as I know
+    ## a troll will start sending me bullshit and ruin my day.
+
+    # Open the file for reading ('r' mode)
+    NTFY_PATH = os.path.join(os.environ['HOME'], '.config', '.credentials', 'ntfy.url')
+    with open(NTFY_PATH, 'r') as file:
+        # Read the first line of the file
+        NTFY_URL = file.readline().strip()  # strip() removes any leading/trailing whitespace
+
+    ### Priority
+    # https://docs.ntfy.sh/publish/#message-priority
+    # 5, Really long vibration bursts, default notification sound with a pop-over notification.
+    # 4, Long vibration burst, default notification sound with a pop-over notification.
+    # 3, Short default vibration and sound. Default notification behavior.
+    # 2, No vibration or sound. Notification will not visibly show up until notification drawer is pulled down.
+    # 1, No vibration or sound. The notification will be under the fold in "Other notifications".
+    ###
+
+    ### Tags
+    # https://docs.ntfy.sh/emojis/
+    ###
+
+    # Headers
+    headers={
+        "Title": title,
+        "Priority": priority,
+        "Tags": tags
+    }
+
+    # Data to be sent in the request's body
+    data = (f"{message}\n").encode(encoding='utf-8')
+    
+    # Sending a POST request
+    requests.post(NTFY_URL, data=data, headers=headers)
+
+def LoggIt(LOG: str = None, message: str = None, LEVEL: str = 'info'):
+
     # Import Modules
     import logging
     import datetime
@@ -21,20 +63,30 @@ def InfoLogger(LOG: str = None, message: str =None):
 
     TODAY = datetime.datetime.now().strftime("%Y%m%d")
     logger = logging.getLogger(__name__)
-    
+
     if not logger.hasHandlers():
-        logger.setLevel(logging.INFO)
+        logger.setLevel(logging.DEBUG)  # Set to lowest level to capture all levels
         formatter = logging.Formatter('%(asctime)s:%(levelname)s' + ' ::: ' + '%(message)s')
         file_handler = logging.FileHandler(f'{log_directory}/{LOG}.log', mode='a', encoding='utf-8')
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
-    # Log the provided message if one was given
+    log_level = {
+        'debug': logging.DEBUG,
+        'info': logging.INFO,
+        'warn': logging.WARNING,
+        'error': logging.ERROR,
+        'critical': logging.CRITICAL
+    }.get(LEVEL.lower(), logging.INFO)
+
     if message:
-        logger.info(message)
+        logger.log(log_level, message)
+
+        # Notify via NotifyMe if the level is 'error' or higher
+        if log_level >= logging.ERROR:
+            NotifyMe(title=f"{LEVEL.upper()} Notification", priority=5, tags='face_with_spiral_eyes', message=message)
 
     return logger
-
 
 # This is a more robust way to check if the process is currently running
 def CheckProcess(pidfile):
@@ -154,7 +206,7 @@ def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TI
         else:
             DATE_SUFFIX = "None"
     else:
-        InfoLogger(LOGGER, f"Did not get a REGEX match. {EPISODE_TITLE}")
+        LoggIt(LOGGER, f"Did not get a REGEX match. {EPISODE_TITLE}", "error")
         sys.exit(1)
 
     # Convert abbreviated month to full month name
@@ -199,6 +251,7 @@ def JREFileName(SERIES_PREFIX: str = None, EPISODE_TITLE: str = None, PUBLISH_DA
     # Import Modules
     import re
     import datetime
+    import sys
 
     # Initialize variables with default values
     PAD = "0000"
@@ -214,9 +267,9 @@ def JREFileName(SERIES_PREFIX: str = None, EPISODE_TITLE: str = None, PUBLISH_DA
             EPISODE_NUMBER = match.group(1)
             GUESTS = match.group(2).replace('-', '').strip()
         else:
-            InfoLogger(LOGGER, f"\"{EPISODE_TITLE}\" does not match the expected pattern")
+            LoggIt(LOGGER, f"\"{EPISODE_TITLE}\" does not match the expected pattern", "warn")
     except Exception as e:
-        InfoLogger(LOGGER, f"\"{EPISODE_TITLE}\" generated an error: {e}")
+        LoggIt(LOGGER, f"\"{EPISODE_TITLE}\" generated an error: {e}", "error")
 
     try:
         # Parse the PUBLISH_DATE to a datetime object
@@ -230,53 +283,11 @@ def JREFileName(SERIES_PREFIX: str = None, EPISODE_TITLE: str = None, PUBLISH_DA
             filename = f"{SERIES_PREFIX}S{year}E{PAD} - #{EPISODE_NUMBER} {GUESTS} ({PUBLISH_DATE}).mkv"
             return filename
         else:
-            InfoLogger(LOGGER, "Episode title is missing")
-            return None
+            LoggIt(LOGGER, "Episode title is missing", "warn")
+            sys.exit(1)
     except Exception as e:
-        InfoLogger(LOGGER, f"Error parsing date \"{PUBLISH_DATE}\": {e}")
-        return None
-
-def NotifyMe(title: str = 'New Message', priority: str = 3, tags: str = 'incoming_envelope', message: str = 'No message included'):
-    
-    # Import Modules
-    import requests
-    import os
-
-    # Get the NTFY url to post messages to
-    ## I don't really want this URL to be public, as I know
-    ## a troll will start sending me bullshit and ruin my day.
-
-    # Open the file for reading ('r' mode)
-    NTFY_PATH = os.path.join(os.environ['HOME'], '.config', '.credentials', 'ntfy.url')
-    with open(NTFY_PATH, 'r') as file:
-        # Read the first line of the file
-        NTFY_URL = file.readline().strip()  # strip() removes any leading/trailing whitespace
-
-    ### Priority
-    # https://docs.ntfy.sh/publish/#message-priority
-    # 5, Really long vibration bursts, default notification sound with a pop-over notification.
-    # 4, Long vibration burst, default notification sound with a pop-over notification.
-    # 3, Short default vibration and sound. Default notification behavior.
-    # 2, No vibration or sound. Notification will not visibly show up until notification drawer is pulled down.
-    # 1, No vibration or sound. The notification will be under the fold in "Other notifications".
-    ###
-
-    ### Tags
-    # https://docs.ntfy.sh/emojis/
-    ###
-
-    # Headers
-    headers={
-        "Title": title,
-        "Priority": priority,
-        "Tags": tags
-    }
-
-    # Data to be sent in the request's body
-    data = (f"{message}\n").encode(encoding='utf-8')
-    
-    # Sending a POST request
-    requests.post(NTFY_URL, data=data, headers=headers)
+        LoggIt(LOGGER, f"Error parsing date \"{PUBLISH_DATE}\": {e}", "error")
+        sys.exit(1)
 
 def WriteHistory(FILE: str = None, URL: str = None):
     
@@ -378,7 +389,7 @@ def GetRatingKeys(url: str, LOGGER: str):
 
         # If no rating keys were found, you could choose to return a message or an empty list
         if not rating_keys:
-            InfoLogger(LOGGER, "No rating keys found")
+            LoggIt(LOGGER, "No rating keys found", "warn")
             return False
 
         return rating_keys  # Return the list of rating keys
@@ -415,17 +426,17 @@ def GetSeriesData(rating_keys: list, LOGGER: str):
                     # Extend the combined Metadata list with metadata from this rating key
                     combined_data["MediaContainer"]["Metadata"].extend(data["MediaContainer"]["Metadata"])
                 else:
-                    InfoLogger(LOGGER, "JSON Data Structure not in the expected format!")
+                    LoggIt(LOGGER, "JSON Data Structure not in the expected format!", "warn")
                     return False
             else:
-                InfoLogger(LOGGER, "Malformed JSON Response.")
+                LoggIt(LOGGER, "Malformed JSON Response.", "warn")
                 return False
 
         # Update the size to reflect the total number of Metadata items
         combined_data["MediaContainer"]["size"] = len(combined_data["MediaContainer"]["Metadata"])
         return combined_data  # Return the combined data structure
     else:
-        InfoLogger(LOGGER, "No ratings keys found. Could not construct JSON Data Structure.")
+        LoggIt(LOGGER, "No ratings keys found. Could not construct JSON Data Structure.", "warn")
         return False
 
 def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str, LOGGER: str, DESCRIPTION: str):
@@ -452,10 +463,10 @@ def EpisodeUpdate(rating_key: str, episode_title: str, section_id: str, LOGGER: 
     episode_response = requests.put(url=episode_update_url, headers=headers, params=episode_params)
 
     if episode_response.status_code == 200:
-        InfoLogger(LOGGER, f"Episode \"{episode_title}\" ({rating_key}) updated successfully")
+        LoggIt(LOGGER, f"Episode \"{episode_title}\" ({rating_key}) updated successfully")
         return True
     else:
-        InfoLogger(LOGGER, f"Episode \"{episode_title}\" ({rating_key}) failed to update")
+        LoggIt(LOGGER, f"Episode \"{episode_title}\" ({rating_key}) failed to update", "error")
         return False
 
 def RefreshPlex(section_id: str, LOGGER: str = None):
@@ -489,10 +500,10 @@ def RefreshPlex(section_id: str, LOGGER: str = None):
 
     if response.status_code == 200:
         time.sleep(5) # Wait 5 seconds before continuing
-        InfoLogger(LOGGER, f"Plex Library Section '{section_name}' refreshed successfully")
+        LoggIt(LOGGER, f"Plex Library Section '{section_name}' refreshed successfully")
         return True
     else:
-        InfoLogger(LOGGER, f"Plex Library Section '{section_name}' failed to refresh\n{response.text}")
+        LoggIt(LOGGER, f"Plex Library Section '{section_name}' failed to refresh\n{response.text}", "error")
         return False
 
 def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = None, thumbnail_url: str = None, LOGGER: str = None, DESCRIPTION: str = None):
@@ -511,20 +522,18 @@ def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = 
                 FILEPATH = episode["Media"][0]["Part"][0]["file"]
                 
                 if FILEPATH == target_file_path:
-                    InfoLogger(LOGGER, f"Filepath: '{FILEPATH}' matches Target: '{target_file_path}'")
+                    LoggIt(LOGGER, f"Filepath: '{FILEPATH}' matches Target: '{target_file_path}'")
 
                     # Check and update episode metadata based on file name pattern
                     pattern = re.compile(r'^.*? - .*? - (.*)(?:\s*\(\d{4}-\d{2}-\d{2}\))\.mkv$|\.mp4$')
                     match = pattern.search(FILEPATH)
                     if match:
-
-                        # InfoLogger(LOGGER, f"Filepath: '{FILEPATH}' matches pattern")
                         EPISODE_TITLE = (match.group(1)).strip()
-                        InfoLogger(LOGGER, f"Episode Title: '{EPISODE_TITLE}'")
+                        LoggIt(LOGGER, f"Episode Title: '{EPISODE_TITLE}'")
                         if EPISODE_TITLE != episode["title"]:
-                            InfoLogger(LOGGER, f"Input Title: '{EPISODE_TITLE}' episode[title]: '{episode["title"]}'")
+                            LoggIt(LOGGER, f"Input Title: '{EPISODE_TITLE}' episode[title]: '{episode["title"]}'")
                             if EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id, LOGGER, DESCRIPTION):
-                                InfoLogger(LOGGER, f"Metadata for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
+                                LoggIt(LOGGER, f"Metadata for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
 
                                 # Update poster if target_file_path matches or if it's a general update
                                 if thumbnail_url and (not target_file_path or FILEPATH == target_file_path):
@@ -534,17 +543,17 @@ def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = 
                                     poster_response = requests.post(url=poster_update_url, headers=headers, params=poster_params)
                                     
                                     if poster_response.status_code == 200:
-                                        InfoLogger(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
+                                        LoggIt(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
                                     else:
-                                        InfoLogger(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) failed to update")
+                                        LoggIt(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) failed to update", "error")
                         else:
-                            InfoLogger(LOGGER, f"Episode Title: '{EPISODE_TITLE}' already matches Metadata.")
+                            LoggIt(LOGGER, f"Episode Title: '{EPISODE_TITLE}' already matches Metadata.")
                     else:
-                        InfoLogger(LOGGER, f"Filepath: '{FILEPATH}' DOES NOT match pattern")
+                        LoggIt(LOGGER, f"Filepath: '{FILEPATH}' DOES NOT match pattern", "warn")
                 else:
                     continue
     else:
-        InfoLogger(LOGGER, "No Series Data Was Returned")
+        LoggIt(LOGGER, "No Series Data Was Returned", "error")
 
 def ProofOfLife():
 

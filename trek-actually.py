@@ -8,7 +8,7 @@ import subprocess
 import sys
 import pytubefix
 import pytubefix.helpers
-from libs.functions import ProofOfLife, CheckHistory, CheckProcess, FileName, InfoLogger, NotifyMe, WriteHistory, PlexLibraryUpdate
+from libs.functions import ProofOfLife, CheckHistory, CheckProcess, FileName, LoggIt, NotifyMe, WriteHistory, PlexLibraryUpdate
 
 if not ProofOfLife:
     sys.exit(1) # Plex Server is offline, so don't add new media to its libraries.
@@ -75,7 +75,7 @@ def main():
         yt = pytubefix.YouTube(str(VIDEO), use_oauth=True, allow_oauth_cache=True)
     
         # Log the action; adjust logging to reflect that we're working in reverse
-        InfoLogger(LOGGER, f"Processing video {rev_index} of the last {len(videos_reversed)} items in reverse order")
+        LoggIt(LOGGER, f"Processing video {rev_index} of the last {len(videos_reversed)} items in reverse order")
     
     # Note: No need to check for 'index == 11' now, as we're directly limiting the loop to at most 10 iterations
 
@@ -86,7 +86,7 @@ def main():
         ID = str(yt.video_id)
         TITLE = str(yt.title).strip()
         if 'Comment Response' in TITLE:
-            InfoLogger(LOGGER, "Comment Response Videos Suck.")
+            LoggIt(LOGGER, "Comment Response Videos Suck.")
             if (not(CheckHistory(HISTORY_LOG, VIDEO))):
                 WriteHistory(HISTORY_LOG, VIDEO)
                 continue
@@ -108,7 +108,7 @@ def main():
         FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
 
         if os.path.exists(FINAL_OUTPUT):
-            InfoLogger(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!")
+            LoggIt(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!")
             if (not(CheckHistory(HISTORY_LOG, VIDEO))):
                 WriteHistory(HISTORY_LOG, VIDEO)
                 PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
@@ -119,14 +119,14 @@ def main():
 
         ## Only capture videos from a specific date range
         #if not(yt.publish_date.year >= 2024):
-        #    InfoLogger(LOGGER, f"{rev_index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
+        #    LoggIt(LOGGER, f"{rev_index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
         #    WriteHistory(HISTORY_LOG, VIDEO)
         #    continue
 
         # Video is NOT in the history file
         if (not(CheckHistory(HISTORY_LOG, VIDEO))):
 
-            InfoLogger(LOGGER, f"{rev_index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) was NOT in history, and will be downloaded.")
+            LoggIt(LOGGER, f"{rev_index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) was NOT in history, and will be downloaded.")
 
             # Download the audio stream, try 160kbps, if that fails, try 128kbps. If that fails, skip it.
             try:
@@ -135,7 +135,7 @@ def main():
                 try:
                     input_audio = yt.streams.filter(adaptive=True, mime_type="audio/webm", abr="128kbps").first().download(f"{TEMP_DIR}",f"{PUBLISH_DATE}.audio.webm")
                 except Exception:
-                    InfoLogger(LOGGER, f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})")
+                    LoggIt(LOGGER, f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})")
                     NotifyMe('Error!','5','face_with_spiral_eyes',f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})")
                     WriteHistory(HISTORY_LOG, VIDEO)
                     continue
@@ -147,7 +147,7 @@ def main():
                 try:
                     input_video = yt.streams.filter(adaptive=True, mime_type="video/webm",res="720p").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.video.webm")
                 except Exception:
-                    InfoLogger(LOGGER, f"There was an error downloading the video stream for \"{TITLE}\" ({ID})")
+                    LoggIt(LOGGER, f"There was an error downloading the video stream for \"{TITLE}\" ({ID})")
                     NotifyMe('Error!','5','face_with_spiral_eyes',f"There was an error downloading the video stream for \"{TITLE}\" ({ID})")
                     if os.path.exists(input_audio):
                         os.remove(input_audio)
@@ -156,7 +156,7 @@ def main():
                 
             # Check to make sure the audio and video files exist
             if not (os.path.exists(input_audio) or (os.path.exists(input_video))):
-                InfoLogger(LOGGER, f"Required media does not exist.")
+                LoggIt(LOGGER, f"Required media does not exist.")
                 continue
 
             # Command to mux video and audio will differ, depending on the hostname
@@ -179,7 +179,7 @@ def main():
             if OUTPUT.returncode == 0:
 
                 # Log the success
-                InfoLogger(LOGGER, f"Downloaded \"{TITLE}\"")
+                LoggIt(LOGGER, f"Downloaded \"{TITLE}\"")
 
                 # Update the history file
                 WriteHistory(HISTORY_LOG, VIDEO)
@@ -200,7 +200,7 @@ def main():
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")
             else:
                 # Log the error output of the FFMPEG command
-                InfoLogger(LOGGER, OUTPUT.stderr)
+                LoggIt(LOGGER, OUTPUT.stderr)
 
                 # Send an NTFY notification
                 NotifyMe('Error!','5','face_with_spiral_eyes','There was an error in the FFMPEG')
@@ -214,7 +214,7 @@ def main():
                 sys.exit(1)
 
         else: # Video IS in the history file
-            InfoLogger(LOGGER, f"{rev_index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) WAS in history, and will be disgarded.")
+            LoggIt(LOGGER, f"{rev_index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) WAS in history, and will be disgarded.")
             continue
 
     # Remove the lock file when the script finishes
