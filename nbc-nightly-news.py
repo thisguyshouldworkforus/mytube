@@ -22,7 +22,7 @@ SECTION_ID = str('5')
 SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F48041&context=source%3Acontent.library~6~9')
 PLAYLIST = True
 CHANNEL = False
-INITIALIZE = True
+INITIALIZE = False
 ####[ REQUIRED VARIABLES ]####
 
 # Get the hostname, for later
@@ -86,7 +86,7 @@ def main():
         TITLE = str(yt.title).strip()
         PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
         HISTORY_PATH = str(pytubefix.helpers.target_directory('/opt/projects/mytube/history'))
-        OUTPUT_FILENAME = NewsFileName(SERIES_PREFIX, PUBLISH_DATE, TITLE)
+        OUTPUT_FILENAME = NewsFileName(SERIES_PREFIX, PUBLISH_DATE, TITLE, LOGGER)
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
         THUMBNAIL_URL = yt.thumbnail_url
         DESCRIPTION = f"{yt.description}\n\n\n\nVideo URL: {VIDEO}\nThumbnail URL: {THUMBNAIL_URL}"
@@ -113,10 +113,10 @@ def main():
             InfoLogger(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!")
             if (not(CheckHistory(HISTORY_LOG, VIDEO))):
                 WriteHistory(HISTORY_LOG, VIDEO)
-                PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
+                # PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
                 continue
             else:
-                PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
+                # PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
                 continue
 
         # Only capture videos from a specific date range
