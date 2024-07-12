@@ -77,13 +77,12 @@ def CheckHistory(FILE: str = None, URL: str = None):
         # Check if ID is in file
         return bool(id_pattern.search(history_content))
 
-def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE: str = None):
+def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE: str = None, LOGGER: str = None):
 
     # Import Modules
     import datetime
     import re
     import sys
-    import time
 
     # Month abbreviation to full name mapping
     month_mapping = {
@@ -115,7 +114,7 @@ def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TI
     day_of_year = f'{publish_date.timetuple().tm_yday:03}'
 
     # Regex the title
-    pattern = re.compile(r'(Nightly News Full Broadcast)(\s+)?([-–—])?(\s+)?(Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|September|Oct|October|Nov|November|Dec|December)(\.?)(\s+)?([0-9]{1,2})')
+    pattern = re.compile(r'(Nightly News Full Broadcast|Nightly News Netcast)(\s+)?([-–—])?(\s+)?(Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|September|Oct|October|Nov|November|Dec|December)(\.?)(\s+)?([0-9]{1,2})(st|nd|rd|th)?')
     match = re.search(pattern, EPISODE_TITLE)
     if match:
         if match.group(1) is not None:
@@ -150,8 +149,12 @@ def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TI
             DIGIT_DAY = match.group(8)
         else:
             DIGIT_DAY = "None"
+        if match.group(9) is not None:
+            DATE_SUFFIX = match.group(9)
+        else:
+            DATE_SUFFIX = "None"
     else:
-        print(f"Did not get a REGEX match. {EPISODE_TITLE}")
+        InfoLogger(LOGGER, f"Did not get a REGEX match. {EPISODE_TITLE}")
         sys.exit(1)
 
     # Convert abbreviated month to full month name
@@ -514,6 +517,7 @@ def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = 
                     pattern = re.compile(r'^.*? - .*? - (.*)(?:\s*\(\d{4}-\d{2}-\d{2}\))\.mkv$|\.mp4$')
                     match = pattern.search(FILEPATH)
                     if match:
+
                         # InfoLogger(LOGGER, f"Filepath: '{FILEPATH}' matches pattern")
                         EPISODE_TITLE = (match.group(1)).strip()
                         InfoLogger(LOGGER, f"Episode Title: '{EPISODE_TITLE}'")
@@ -521,22 +525,22 @@ def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = 
                             InfoLogger(LOGGER, f"Input Title: '{EPISODE_TITLE}' episode[title]: '{episode["title"]}'")
                             if EpisodeUpdate(RATING_KEY, EPISODE_TITLE, section_id, LOGGER, DESCRIPTION):
                                 InfoLogger(LOGGER, f"Metadata for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
+
+                                # Update poster if target_file_path matches or if it's a general update
+                                if thumbnail_url and (not target_file_path or FILEPATH == target_file_path):
+                                    poster_update_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{RATING_KEY}/posters"
+                                    headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{GetPlexToken()}'}
+                                    poster_params = {'url': f'{thumbnail_url}'}
+                                    poster_response = requests.post(url=poster_update_url, headers=headers, params=poster_params)
+                                    
+                                    if poster_response.status_code == 200:
+                                        InfoLogger(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
+                                    else:
+                                        InfoLogger(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) failed to update")
                         else:
                             InfoLogger(LOGGER, f"Episode Title: '{EPISODE_TITLE}' already matches Metadata.")
                     else:
                         InfoLogger(LOGGER, f"Filepath: '{FILEPATH}' DOES NOT match pattern")
-                    
-                    # Update poster if target_file_path matches or if it's a general update
-                    if thumbnail_url and (not target_file_path or FILEPATH == target_file_path):
-                        poster_update_url = f"http://plex.int.snyderfamily.co:32400/library/metadata/{RATING_KEY}/posters"
-                        headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Plex-Token': f'{GetPlexToken()}'}
-                        poster_params = {'url': f'{thumbnail_url}'}
-                        poster_response = requests.post(url=poster_update_url, headers=headers, params=poster_params)
-                        
-                        if poster_response.status_code == 200:
-                            InfoLogger(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) updated successfully")
-                        else:
-                            InfoLogger(LOGGER, f"Poster for episode \"{EPISODE_TITLE}\" ({RATING_KEY}) failed to update")
                 else:
                     continue
     else:
