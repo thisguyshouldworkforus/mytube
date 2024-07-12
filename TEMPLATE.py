@@ -101,7 +101,7 @@ def main():
         FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
 
         if os.path.exists(FINAL_OUTPUT):
-            LogIt(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!")
+            LogIt(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!", "warn")
             if (not(CheckHistory(HISTORY_LOG, VIDEO))):
                 WriteHistory(HISTORY_LOG, VIDEO)
                 PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)

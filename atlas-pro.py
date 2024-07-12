@@ -101,7 +101,7 @@ def main():
         FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
 
         if os.path.exists(FINAL_OUTPUT):
-            LogIt(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!")
+            LogIt(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!", "warn")
             if (not(CheckHistory(HISTORY_LOG, VIDEO))):
                 WriteHistory(HISTORY_LOG, VIDEO)
                 PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
@@ -128,8 +128,7 @@ def main():
                 try:
                     input_audio = yt.streams.filter(adaptive=True, mime_type="audio/webm", abr="128kbps").first().download(f"{TEMP_DIR}",f"{PUBLISH_DATE}.audio.webm")
                 except Exception:
-                    LogIt(LOGGER, f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})")
-                    NotifyMe('Error!','5','face_with_spiral_eyes',f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})")
+                    LogIt(LOGGER, f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})", "error")
                     WriteHistory(HISTORY_LOG, VIDEO)
                     continue
 
@@ -140,8 +139,7 @@ def main():
                 try:
                     input_video = yt.streams.filter(adaptive=True, mime_type="video/webm",res="720p").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.video.webm")
                 except Exception:
-                    LogIt(LOGGER, f"There was an error downloading the video stream for \"{TITLE}\" ({ID})")
-                    NotifyMe('Error!','5','face_with_spiral_eyes',f"There was an error downloading the video stream for \"{TITLE}\" ({ID})")
+                    LogIt(LOGGER, f"There was an error downloading the video stream for \"{TITLE}\" ({ID})", "error")
                     if os.path.exists(input_audio):
                         os.remove(input_audio)
                     WriteHistory(HISTORY_LOG, VIDEO)
@@ -193,10 +191,7 @@ def main():
                 NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")
             else:
                 # Log the error output of the FFMPEG command
-                LogIt(LOGGER, OUTPUT.stderr)
-
-                # Send an NTFY notification
-                NotifyMe('Error!','5','face_with_spiral_eyes','There was an error in the FFMPEG')
+                LogIt(LOGGER, OUTPUT.stderr, "error")
 
                 # Clean up our mess
                 os.remove(input_audio)

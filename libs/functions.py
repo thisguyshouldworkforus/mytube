@@ -66,8 +66,8 @@ def LogIt(LOG: str = None, message: str = None, LEVEL: str = 'info'):
 
     if not logger.hasHandlers():
         logger.setLevel(logging.DEBUG)  # Set to lowest level to capture all levels
-        formatter = logging.Formatter('%(asctime)s:%(levelname)s' + ' ::: ' + '%(message)s')
-        file_handler = logging.FileHandler(f'{log_directory}/{LOG}.log', mode='a', encoding='utf-8')
+        formatter = logging.Formatter('%(asctime)s:%(levelname)s' + f' :::[ {LOG} ]::: ' + '%(message)s')
+        file_handler = logging.FileHandler(f'{log_directory}/mytube.log', mode='a', encoding='utf-8')
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
