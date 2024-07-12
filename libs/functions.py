@@ -77,31 +77,89 @@ def CheckHistory(FILE: str = None, URL: str = None):
         # Check if ID is in file
         return bool(id_pattern.search(history_content))
 
-def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None):
+def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE: str = None):
 
     # Import Modules
     import datetime
+    import re
+    import sys
+    import time
+
+    # Month abbreviation to full name mapping
+    month_mapping = {
+        "Jan": "January",
+        "Feb": "February",
+        "Mar": "March",
+        "Apr": "April",
+        "May": "May",
+        "Jun": "June",
+        "Jul": "July",
+        "Aug": "August",
+        "Sep": "September",
+        "Oct": "October",
+        "Nov": "November",
+        "Dec": "December"
+    }
 
     # Parse the PUBLISH_DATE to a datetime object
     publish_date = datetime.datetime.strptime(PUBLISH_DATE, "%Y-%m-%d")
 
     # Extract the year, month (as abbreviation), and day (with zero padding)
     year = publish_date.year
-    month_abbr = publish_date.strftime("%b")
+    month_short = publish_date.strftime("%b")
+    month_long = publish_date.strftime("%B")
     day = publish_date.day
     day_of_week = publish_date.strftime("%a")
 
     # Calculate the day of the year (episode number)
-    day_of_year = publish_date.timetuple().tm_yday
+    day_of_year = f'{publish_date.timetuple().tm_yday:03}'
 
-    # Check if the publish_date is after January 13th
-    jan_13 = datetime.datetime(year, 1, 13)
-    if publish_date > jan_13:
-        # Minus one day, because there was no episode on Saturday, January 13th.
-        day_of_year -= 1
+    # Regex the title
+    pattern = re.compile(r'(Nightly News Full Broadcast)(\s+)?([-–—])?(\s+)?(Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|September|Oct|October|Nov|November|Dec|December)(\.?)(\s+)?([0-9]{1,2})')
+    match = re.search(pattern, EPISODE_TITLE)
+    if match:
+        if match.group(1) is not None:
+            SHOW_NAME = match.group(1)
+        else:
+            SHOW_NAME = "None"
+        if match.group(2) is not None:
+            SPACE = match.group(2)
+        else:
+            SPACE = "None"
+        if match.group(3) is not None:
+            DASH = match.group(3)
+        else:
+            DASH = "None"
+        if match.group(4) is not None:
+            SPACE2 = match.group(4)
+        else:
+            SPACE2 = "None"
+        if match.group(5) is not None:
+            MONTH = match.group(5)
+        else:
+            MONTH = "None"
+        if match.group(6) is not None:
+            PERIOD = match.group(6)
+        else:
+            PERIOD = "None"
+        if match.group(7) is not None:
+            SPACE3 = match.group(7)
+        else:
+            SPACE3 = "None"
+        if match.group(8) is not None:
+            DIGIT_DAY = match.group(8)
+        else:
+            DIGIT_DAY = "None"
+    else:
+        print(f"Did not get a REGEX match. {EPISODE_TITLE}")
+        sys.exit(1)
+
+    # Convert abbreviated month to full month name
+    if MONTH in month_mapping:
+        MONTH = month_mapping[MONTH]
 
     # Construct the filename
-    filename = f"{SERIES_PREFIX}S{year}E{day_of_year} - {month_abbr} {day} {day_of_week} ({PUBLISH_DATE}).mkv"
+    filename = f"{SERIES_PREFIX}S{year}E{day_of_year} - {MONTH} {DIGIT_DAY}, {year} ({PUBLISH_DATE}).mkv"
 
     # return the filename
     return filename
@@ -505,3 +563,5 @@ def ProofOfLife():
             return True
     except Exception:
         return False
+
+
