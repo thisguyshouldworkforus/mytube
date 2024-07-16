@@ -154,7 +154,7 @@ def main():
             if OUTPUT.returncode == 0:
 
                 # Log the success
-                LogIt(LOGGER, f"Downloaded \"{TITLE}\"")
+                LogIt(LOGGER, f"Downloaded \"{TITLE}\" for {LOGGER}")
 
                 # Update the history file
                 WriteHistory(HISTORY_LOG, VIDEO)
