@@ -19,7 +19,7 @@ SECTION_ID = str('5')
 SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F48334&context=source%3Acontent.library~11~2')
 PLAYLIST = False
 CHANNEL = True
-INITIALIZE = True
+INITIALIZE = False
 ####[ REQUIRED VARIABLES ]####
 
 if not ProofOfLife:
