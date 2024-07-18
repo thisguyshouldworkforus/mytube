@@ -2,6 +2,7 @@
 
 # Import Modules
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -84,7 +85,7 @@ def main():
 
         # Set the video ID, title, and publish date
         ID = str(yt.video_id)
-        TITLE = str(yt.title).strip()
+        TITLE = re.search(r'KT #\d+', yt.title).group() if re.search(r'KT #\d+', yt.title) else yt.title
         PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
         HISTORY_PATH = str(pytubefix.helpers.target_directory('/opt/projects/mytube/history'))
         OUTPUT_FILENAME = FileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}", f"{TITLE}")
