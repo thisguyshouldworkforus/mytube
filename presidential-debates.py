@@ -172,7 +172,7 @@ def main():
                 PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
                 
                 # Send an NTFY notification
-                NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE}")
+                NotifyMe('New Episode!','2','dolphin',f"Downloaded {TITLE} for {LOGGER}")
                 continue
             else:
                 # Log the error output of the FFMPEG command
