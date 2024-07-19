@@ -9,7 +9,7 @@ import subprocess
 import sys
 import pytubefix
 import pytubefix.helpers
-from libs.functions import ProofOfLife, CheckHistory, CheckProcess, FileName, LogIt, NotifyMe, WriteHistory, PlexLibraryUpdate
+from libs.functions import ProofOfLife, CheckHistory, CheckProcess, KillTonyFileName, LogIt, NotifyMe, WriteHistory, PlexLibraryUpdate
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('killtony')
@@ -85,10 +85,10 @@ def main():
 
         # Set the video ID, title, and publish date
         ID = str(yt.video_id)
-        TITLE = re.search(r'KT #\d+', yt.title).group() if re.search(r'KT #\d+', yt.title) else yt.title
+        TITLE = yt.title
         PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
         HISTORY_PATH = str(pytubefix.helpers.target_directory('/opt/projects/mytube/history'))
-        OUTPUT_FILENAME = FileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}", f"{TITLE}")
+        OUTPUT_FILENAME = KillTonyFileName(f"{SERIES_PREFIX}", f"{TITLE}", f"{PUBLISH_DATE}", f"{LOGGER}")
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
         THUMBNAIL_URL = yt.thumbnail_url
         DESCRIPTION = f"{yt.description}\n\n\n\nVideo URL: {VIDEO}\nThumbnail URL: {THUMBNAIL_URL}"
