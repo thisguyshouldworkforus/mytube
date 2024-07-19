@@ -578,10 +578,20 @@ def RefreshPlex(section_id: str, LOGGER: str = None):
 def PlexLibraryUpdate(section_id: str, SERIES_URL: str, target_file_path: str = None, thumbnail_url: str = None, LOGGER: str = None, DESCRIPTION: str = None):
     
     # Import Modules
+    import inspect
     import re
     import requests
 
+    # Get the call stack
+    stack = inspect.stack()
+    # Get the filename of the calling script
+    caller_filename = stack[1].filename
+
+    if caller_filename.endswith('joe-rogan-experience.py'):
+        LogIt(LOGGER, "Joe Rogan Experience Detected")
+
     if RefreshPlex(section_id, LOGGER):
+        LogIt(LOGGER, "Inside RefreshPlex Logic block")
         rating_keys = GetRatingKeys(SERIES_URL, LOGGER)
         series_data = GetSeriesData(rating_keys, LOGGER)
         
