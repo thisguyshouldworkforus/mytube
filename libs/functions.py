@@ -289,6 +289,75 @@ def JREFileName(SERIES_PREFIX: str = None, EPISODE_TITLE: str = None, PUBLISH_DA
         LogIt(LOGGER, f"Error parsing date \"{PUBLISH_DATE}\": {e}", "error")
         sys.exit(1)
 
+def KillTonyFileName(SERIES_PREFIX: str = None, EPISODE_TITLE: str = None, PUBLISH_DATE: str = None, LOGGER: str = None):
+    
+    # Import modules
+    import datetime
+    import re
+    import sys
+
+    # Extract and pad the KT number
+    match = re.search(r'KT #(\d+)', EPISODE_TITLE)
+    if match:
+        number = match.group(1).zfill(4)
+    else:
+        number = "0000"  # Default value if no match found
+
+    # Remove the initial "KT #xxxx - " part
+    title = re.sub(r'KT #\d+\s*[-–—]\s*', '', EPISODE_TITLE)
+
+    # Remove text within parentheses
+    title = re.sub(r'\(.*?\)', '', title)
+
+    # Replace hyphens, dashes, em dashes, and en dashes with ", "
+    title = re.sub(r'\s*[-–—]\s*', ', ', title)
+    
+    # Replace " + " with ", "
+    title = title.replace(' + ', ', ')
+
+    # Fix spaces around commas
+    title = re.sub(r'\s*,\s*', ', ', title)
+
+    # Trim leading and trailing ", "
+    title = title.strip(', ')
+
+    # Convert ALL CAPS to "Standard Case"
+    title = ' '.join(word.capitalize() for word in title.split())
+
+    # Combine the padded number with the processed title
+    processed_title = f"#{number} - {title}"
+    
+    try:
+        # Extract the episode number from the title
+        pattern = re.compile(r'^#(\d{1,4})(.*)$')
+        match = pattern.search(processed_title)
+        if match:
+            PAD = match.group(1).zfill(4)
+            EPISODE_NUMBER = match.group(1)
+            GUESTS = match.group(2).strip()
+        else:
+            LogIt(LOGGER, f"\"{EPISODE_TITLE}\" does not match the expected pattern", "warn")
+    except Exception as e:
+        LogIt(LOGGER, f"\"{EPISODE_TITLE}\" generated an error: {e}", "error")
+
+    try:
+        # Parse the PUBLISH_DATE to a datetime object
+        publish_date = datetime.datetime.strptime(PUBLISH_DATE, "%Y-%m-%d")
+
+        # Extract the year, month (as abbreviation), and day (with zero padding)
+        year = publish_date.year
+
+        # Construct the filename
+        if EPISODE_TITLE:
+            filename = f"{SERIES_PREFIX}S{year}E{PAD} - #{EPISODE_NUMBER} {GUESTS} ({PUBLISH_DATE}).mkv"
+            return filename
+        else:
+            LogIt(LOGGER, "Episode title is missing", "warn")
+            sys.exit(1)
+    except Exception as e:
+        LogIt(LOGGER, f"Error parsing date \"{PUBLISH_DATE}\": {e}", "error")
+        sys.exit(1)
+
 def WriteHistory(FILE: str = None, URL: str = None):
     
     # Import Modules
@@ -576,5 +645,3 @@ def ProofOfLife():
             return True
     except Exception:
         return False
-
-
