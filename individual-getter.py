@@ -11,15 +11,15 @@ import pytubefix.helpers
 from libs.functions import ProofOfLife, CheckHistory, CheckProcess, FileName, LogIt, NotifyMe, WriteHistory, PlexLibraryUpdate
 
 ####[ REQUIRED VARIABLES ]####
-LOGGER = str('debate')
-OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.docs/Presidential Debates (2024) {tvdb-000000}'))
-SERIES_PREFIX = str('Presidential Debates - ')
-VIDEOS = ['https://www.youtube.com/watch?v=855Am6ovK7s', 'https://www.youtube.com/watch?v=FRlI2SQ0Ueg', 'https://www.youtube.com/watch?v=smkyorC5qwc', 'https://www.youtube.com/watch?v=wW1lY5jFNcQ', 'https://www.youtube.com/watch?v=bPiofmZGb8o']
-SECTION_ID = str('6')
-SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F47748&context=source%3Acontent.library~0~0')
-PLAYLIST = False
-CHANNEL = False
-INITIALIZE = False
+LOGGER = str('nbcnews')
+OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.shows/NBC Nightly News with Lester Holt (2013) {tvdb-139911}'))
+SERIES_PREFIX = str("NBC Nightly News with Lester Holt (2013) - ")
+VIDEOS = ['https://www.youtube.com/watch?v=rNPAV6oNtgg']
+SECTION_ID = str('5')
+SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F48041&context=source%3Acontent.library~6~9')
+# PLAYLIST = False
+# CHANNEL = False
+# INITIALIZE = False
 ####[ REQUIRED VARIABLES ]####
 
 if not ProofOfLife:
@@ -61,23 +61,10 @@ def main():
 
         # Set the video ID, title, and publish date
         ID = str(yt.video_id)
-        TITLE = str(yt.title).strip()
-        if VIDEO == 'https://www.youtube.com/watch?v=855Am6ovK7s':
-            PUBLISH_DATE = '2016-09-26'
-        elif VIDEO == 'https://www.youtube.com/watch?v=FRlI2SQ0Ueg':
-            PUBLISH_DATE = '2016-10-09'
-        elif VIDEO == 'https://www.youtube.com/watch?v=smkyorC5qwc':
-            PUBLISH_DATE = '2016-10-19'
-        elif VIDEO == 'https://www.youtube.com/watch?v=wW1lY5jFNcQ':
-            PUBLISH_DATE = '2020-09-29'
-        elif VIDEO == 'https://www.youtube.com/watch?v=n7I1ZhTxWfo':
-            PUBLISH_DATE = '2020-10-07'
-        elif VIDEO == 'https://www.youtube.com/watch?v=bPiofmZGb8o':
-            PUBLISH_DATE = '2020-10-22'
-        else:
-            PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
+        TITLE = str("Biden Drops Out Of 2024 Presidential Race").strip()
+        PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
         HISTORY_PATH = str(pytubefix.helpers.target_directory('/opt/projects/mytube/history'))
-        OUTPUT_FILENAME = FileName(f"{SERIES_PREFIX}", f"{PUBLISH_DATE}", f"{TITLE}")
+        OUTPUT_FILENAME = "NBC Nightly News with Lester Holt (2013) - S00E01 - SPECIAL_Biden Drops Out Of 2024 Presidential Race (2024-07-24).mkv"
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
         THUMBNAIL_URL = yt.thumbnail_url
         DESCRIPTION = f"{yt.description}\n\n\n\nVideo URL: {VIDEO}\nThumbnail URL: {THUMBNAIL_URL}"
