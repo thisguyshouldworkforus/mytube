@@ -64,8 +64,8 @@ def main():
     videos_reversed = list(reversed(x.videos))  # Reverse the list of videos
     
     # # Check if there are more than 10 videos, and if so, only work with the last 10
-    if len(videos_reversed) > 10:
-        videos_reversed = videos_reversed[:10]
+    if len(videos_reversed) > 3:
+        videos_reversed = videos_reversed[:3]
     
     # Iterate through at most the last 10 items of the playlist in reverse
     for rev_index, VID in enumerate(videos_reversed, start=1):
