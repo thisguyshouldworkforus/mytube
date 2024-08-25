@@ -2,6 +2,7 @@
 
 # Import Modules
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -110,11 +111,14 @@ def main():
                 PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
                 continue
 
-        ## Only capture videos from a specific date range
-        #if not(yt.publish_date.year >= 2024):
-        #    LogIt(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
-        #    WriteHistory(HISTORY_LOG, VIDEO)
-        #    continue
+        pattern = r'(compilation|compilations)'
+        if re.search(pattern, TITLE, re.IGNORECASE):
+            LogIt(LOGGER, f"Episode \"{TITLE}\" ({ID}) is not a desired episode!")
+            if not CheckHistory(HISTORY_LOG, VIDEO):
+                WriteHistory(HISTORY_LOG, VIDEO)
+                continue
+            else:
+                continue
 
         # Video is NOT in the history file
         if (not(CheckHistory(HISTORY_LOG, VIDEO))):
