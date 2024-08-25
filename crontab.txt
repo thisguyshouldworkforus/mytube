@@ -1,0 +1,59 @@
+# NBC Nightly News
+*/10 19-20 * * 1-5 /opt/projects/mytube/nbc-nightly-news.py
+
+# Danny Go!
+15 00 * * * /opt/projects/mytube/dannygo.py
+02 08 * * * /opt/projects/mytube/danygo.py
+
+# SNL Weekend Update
+30 00 * * * /opt/projects/mytube/weekendupdate.py
+04 08 * * * /opt/projects/mytube/weekendupdate.py
+
+# Trek Actually
+45 00 * * * /opt/projects/mytube/trek-actually.py
+06 08 * * * /opt/projects/mytube/trek-actually.py
+
+# Steve & Maggie
+00 01 * * * /opt/projects/mytube/steve-and-maggie.py
+08 08 * * * /opt/projects/mytube/steve-and-maggie.py
+
+# PBS Spacetime
+15 01 * * * /opt/projects/mytube/spacetime.py
+10 08 * * * /opt/projects/mytube/spacetime.py
+
+# The Shawn Ryan Show
+30 01 * * * /opt/projects/mytube/shawn-ryan-show.py
+12 08 * * * /opt/projects/mytube/shawn-ryan-show.py
+
+# Retrobytes
+45 01 * * * /opt/projects/mytube/retrobytes.py
+14 08 * * * /opt/projects/mytube/retrobytes.py
+
+# The entire history of the universe
+00 02 * * * /opt/projects/mytube/hot-universe.py
+16 08 * * * /opt/projects/mytube/hot-universe.py
+
+# The entire history of humankind
+15 02 * * * /opt/projects/mytube/hot-humankind.py
+18 08 * * * /opt/projects/mytube/hot-humankind.py
+
+# The entire history of the earth
+30 02 * * * /opt/projects/mytube/hot-earth.py
+20 08 * * * /opt/projects/mytube/hot-earth.py
+
+# Atlas Pro
+45 02 * * * /opt/projects/mytube/atlas-pro.py
+22 08 * * * /opt/projects/mytube/atlas-pro.py
+
+# Joe Rogan Experience
+00 03 * * * /opt/projects/mytube/joe-rogan-experience.py
+24 08 * * * /opt/projects/mytube/joe-rogan-experience.py
+
+# Kill Tony (Tuesdays at 6am)
+00 06 * * 2 /opt/projects/mytube/kill-tony.py
+00 08 * * 2 /opt/projects/mytube/kill-tony.py
+
+# Doctor Mike
+15 06 * * * /opt/projects/mytube/doctor-mike.py
+15 08 * * * /opt/projects/mytube/doctor-mike.py
+
