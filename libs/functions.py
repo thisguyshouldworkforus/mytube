@@ -147,6 +147,7 @@ def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TI
         "Jul": "July",
         "Aug": "August",
         "Sep": "September",
+        "Sept": "September",
         "Oct": "October",
         "Nov": "November",
         "Dec": "December"
@@ -166,7 +167,7 @@ def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TI
     day_of_year = f'{publish_date.timetuple().tm_yday:03}'
 
     # Regex the title
-    pattern = re.compile(r'(Nightly News Full Broadcast|Nightly News Netcast)(\s+)?([-–—])?(\s+)?(Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|September|Oct|October|Nov|November|Dec|December)(\.?)(\s+)?([0-9]{1,2})(st|nd|rd|th)?')
+    pattern = re.compile(r'(Nightly News Full Broadcast|Nightly News Netcast)(\s+)?([-–—])?(\s+)?(Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|September|Sept|Oct|October|Nov|November|Dec|December)(\.?)(\s+)?([0-9]{1,2})(st|nd|rd|th)?')
     match = re.search(pattern, EPISODE_TITLE)
     if match:
         if match.group(1) is not None:
