@@ -84,7 +84,7 @@ def LogIt(LOG: str = None, message: str = None, LEVEL: str = 'info'):
 
         # Notify via NotifyMe if the level is 'error' or higher
         if ((log_level == logging.ERROR) or (log_level == logging.CRITICAL)):
-            NotifyMe(title=f"{LEVEL.upper()} Notification", priority=5, tags='face_with_spiral_eyes', message=message)
+            NotifyMe(title=f"{LEVEL.upper()} Notification", priority='5', tags='face_with_spiral_eyes', message=message)
 
     return logger
 
