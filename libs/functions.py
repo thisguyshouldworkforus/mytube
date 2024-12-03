@@ -130,7 +130,6 @@ def CheckHistory(FILE: str = None, URL: str = None):
         return bool(id_pattern.search(history_content))
 
 def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE: str = None, LOGGER: str = None):
-
     # Import Modules
     import datetime
     import re
@@ -158,82 +157,25 @@ def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TI
 
     # Extract the year, month (as abbreviation), and day (with zero padding)
     year = publish_date.year
-    month_short = publish_date.strftime("%b")
     month_long = publish_date.strftime("%B")
-    day = publish_date.day
-    day_of_week = publish_date.strftime("%a")
-
-    # Calculate the day of the year (episode number)
     day_of_year = f'{publish_date.timetuple().tm_yday:03}'
 
-    # # Regex the title
-    # Updated Regex pattern to include optional parentheses around the month and day
+    # Regex the title
     pattern = re.compile(
-        r'(Nightly News Full Broadcast|Nightly News Netcast)(\s+)?([-–—])?(\s+)?'
-        r'(\()?'
+        r'(Nightly News)(\s+(Full Broadcast|Netcast))?\s*'
+        r'([-–—]\s+)?'
         r'(Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|September|Sept|Oct|October|Nov|November|Dec|December)(\.?)'
-        r'(\s+)?([0-9]{1,2})(st|nd|rd|th)?'
-        r'(\))?'
+        r'\s*([0-9]{1,2})(st|nd|rd|th)?'
     )
 
     match = re.search(pattern, EPISODE_TITLE)
     if match:
         SHOW_NAME = match.group(1) if match.group(1) is not None else "None"
-        SPACE = match.group(2) if match.group(2) is not None else "None"
-        DASH = match.group(3) if match.group(3) is not None else "None"
-        SPACE2 = match.group(4) if match.group(4) is not None else "None"
-        
-        # Group 5: Optional opening parenthesis
-        OPEN_PAREN = match.group(5) if match.group(5) is not None else "None"
-        
-        MONTH = match.group(6) if match.group(6) is not None else "None"
-        PERIOD = match.group(7) if match.group(7) is not None else "None"
-        SPACE3 = match.group(8) if match.group(8) is not None else "None"
-        DIGIT_DAY = match.group(9) if match.group(9) is not None else "None"
-        DATE_SUFFIX = match.group(10) if match.group(10) is not None else "None"
-        
-        # Group 11: Optional closing parenthesis
-        CLOSE_PAREN = match.group(11) if match.group(11) is not None else "None"
-
-        # pattern = re.compile(r'(Nightly News Full Broadcast|Nightly News Netcast)(\s+)?([-–—])?(\s+)?(Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|September|Sept|Oct|October|Nov|November|Dec|December)(\.?)(\s+)?([0-9]{1,2})(st|nd|rd|th)?')
-        # match = re.search(pattern, EPISODE_TITLE)
-        # if match:
-        #     if match.group(1) is not None:
-        #         SHOW_NAME = match.group(1)
-        #     else:
-        #         SHOW_NAME = "None"
-        #     if match.group(2) is not None:
-        #         SPACE = match.group(2)
-        #     else:
-        #         SPACE = "None"
-        #     if match.group(3) is not None:
-        #         DASH = match.group(3)
-        #     else:
-        #         DASH = "None"
-        #     if match.group(4) is not None:
-        #         SPACE2 = match.group(4)
-        #     else:
-        #         SPACE2 = "None"
-        #     if match.group(5) is not None:
-        #         MONTH = match.group(5)
-        #     else:
-        #         MONTH = "None"
-        #     if match.group(6) is not None:
-        #         PERIOD = match.group(6)
-        #     else:
-        #         PERIOD = "None"
-        #     if match.group(7) is not None:
-        #         SPACE3 = match.group(7)
-        #     else:
-        #         SPACE3 = "None"
-        #     if match.group(8) is not None:
-        #         DIGIT_DAY = match.group(8)
-        #     else:
-        #         DIGIT_DAY = "None"
-        #     if match.group(9) is not None:
-        #         DATE_SUFFIX = match.group(9)
-        #     else:
-        #         DATE_SUFFIX = "None"
+        BROADCAST_TYPE = match.group(3) if match.group(3) is not None else "None"
+        DASH = match.group(4) if match.group(4) is not None else "None"
+        MONTH = match.group(5) if match.group(5) is not None else "None"
+        DIGIT_DAY = match.group(7) if match.group(7) is not None else "None"
+        DATE_SUFFIX = match.group(8) if match.group(8) is not None else "None"
     else:
         LogIt(LOGGER, f"Did not get a REGEX match. {EPISODE_TITLE}", "error")
         sys.exit(1)
@@ -245,7 +187,6 @@ def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TI
     # Construct the filename
     filename = f"{SERIES_PREFIX}S{year}E{day_of_year} - {MONTH} {DIGIT_DAY}, {year} ({PUBLISH_DATE}).mkv"
 
-    # return the filename
     return filename
 
 def FileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TITLE: str = None):
