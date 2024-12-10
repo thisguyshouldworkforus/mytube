@@ -20,7 +20,7 @@ SECTION_ID = str('7')
 SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F38622&context=source%3Acontent.library~2~1')
 PLAYLIST = False
 CHANNEL = True
-INITIALIZE = False
+INITIALIZE = True
 ####[ REQUIRED VARIABLES ]####
 
 if not ProofOfLife:
@@ -111,13 +111,11 @@ def main():
                 PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
                 continue
 
-        pattern = r'(compilation|compilations)'
-        if re.search(pattern, TITLE, re.IGNORECASE):
+        pattern = r'(compilation|compilations| + more)'
+        if re.search(pattern, OUTPUT_FILENAME, re.IGNORECASE):
             LogIt(LOGGER, f"Episode \"{TITLE}\" ({ID}) is not a desired episode!")
             if not CheckHistory(HISTORY_LOG, VIDEO):
                 WriteHistory(HISTORY_LOG, VIDEO)
-                continue
-            else:
                 continue
 
         # Video is NOT in the history file
