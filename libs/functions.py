@@ -165,7 +165,8 @@ def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TI
         r'(Nightly News)(\s+(Full Broadcast|Netcast))?\s*'
         r'([-–—]\s+)?'
         r'(Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|September|Sept|Oct|October|Nov|November|Dec|December)(\.?)'
-        r'\s*([0-9]{1,2})(st|nd|rd|th)?'
+        r'\s*([0-9]{1,2})(st|nd|rd|th)?',
+        re.IGNORECASE
     )
 
     match = re.search(pattern, EPISODE_TITLE)
