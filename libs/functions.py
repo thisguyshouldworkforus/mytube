@@ -162,7 +162,7 @@ def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TI
 
     # Regex the title
     pattern = re.compile(
-        r'(Nightly News)(\s+(Full Broadcast|Netcast))?\s*'
+        r'(Nightly News)(\s+)?(Full)?(\s+)?(Broadcast|Netcast|Episode)?\s*'
         r'([-–—]\s+)?'
         r'(Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|September|Sept|Oct|October|Nov|November|Dec|December)(\.?)'
         r'\s*([0-9]{1,2})(st|nd|rd|th)?',
@@ -171,12 +171,15 @@ def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TI
 
     match = re.search(pattern, EPISODE_TITLE)
     if match:
+        # # Print all matched groups with their numbers
+        # for group_num, group_value in enumerate(match.groups(), start=1):
+        #     print(f"match[{group_num}] = {group_value}")
         SHOW_NAME = match.group(1) if match.group(1) is not None else "None"
         BROADCAST_TYPE = match.group(3) if match.group(3) is not None else "None"
         DASH = match.group(4) if match.group(4) is not None else "None"
-        MONTH = match.group(5) if match.group(5) is not None else "None"
-        DIGIT_DAY = match.group(7) if match.group(7) is not None else "None"
-        DATE_SUFFIX = match.group(8) if match.group(8) is not None else "None"
+        MONTH = match.group(7) if match.group(7) is not None else "None"
+        DIGIT_DAY = match.group(9) if match.group(9) is not None else "None"
+        DATE_SUFFIX = match.group(10) if match.group(10) is not None else "None"
     else:
         LogIt(LOGGER, f"Did not get a REGEX match. {EPISODE_TITLE}", "error")
         sys.exit(1)
