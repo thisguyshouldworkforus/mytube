@@ -69,10 +69,10 @@ def main():
             if index == 4:
                 
                 # Report that we've reached the limit (minus 1, because we're halting before processing the 11th.)
-                LogIt(LOGGER, f"Reached the index limit ({index - 1} playlist items).")
+                LogIt(LOGGER, f"Reached the index limit ({index - 1} playlist items).", "info")
                 break
             else:
-                LogIt(LOGGER, f"Working on video {index} of {len(x.video_urls)}")
+                LogIt(LOGGER, f"Working on video {index} of {len(x.video_urls)}", "info")
         
         VIDEO = VID.watch_url
 
@@ -91,7 +91,7 @@ def main():
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
         THUMBNAIL_URL = yt.thumbnail_url
         DESCRIPTION = f"{yt.description}\n\n\n\nVideo URL: {VIDEO}\nThumbnail URL: {THUMBNAIL_URL}"
-        
+
         # Check if the history file exists, and if not, create it
         if not os.path.exists(HISTORY_LOG):
             with open(HISTORY_LOG, "w") as f:
@@ -100,7 +100,7 @@ def main():
         # Ignore Weekend News
         day_of_week = yt.publish_date.strftime("%a")
         if day_of_week in ('Sat', 'Sun'):
-            LogIt(LOGGER, "Skipping Weekend News")
+            LogIt(LOGGER, "Skipping Weekend News", "info")
             if (not(CheckHistory(HISTORY_LOG, VIDEO))):
                 WriteHistory(HISTORY_LOG, VIDEO)
                 continue
@@ -121,7 +121,7 @@ def main():
                 continue
 
         # Only capture videos from a specific date range
-        if not(yt.publish_date.year >= 2024):
+        if not(yt.publish_date.year >= 2025):
             LogIt(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
             WriteHistory(HISTORY_LOG, VIDEO)
             continue
