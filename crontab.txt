@@ -1,6 +1,10 @@
 # NBC Nightly News
 */10 19-20 * * 1-5 /opt/projects/mytube/nbc-nightly-news.py
 
+# The Popcast!
+00 00 * * * /opt/projects/mytube/popcast.py
+00 08 * * * /opt/projects/mytube/popcast.py
+
 # Danny Go!
 15 00 * * * /opt/projects/mytube/dannygo.py
 02 08 * * * /opt/projects/mytube/danygo.py
@@ -20,10 +24,6 @@
 # PBS Spacetime
 15 01 * * * /opt/projects/mytube/spacetime.py
 10 08 * * * /opt/projects/mytube/spacetime.py
-
-# The Shawn Ryan Show
-30 01 * * * /opt/projects/mytube/shawn-ryan-show.py
-12 08 * * * /opt/projects/mytube/shawn-ryan-show.py
 
 # Retrobytes
 45 01 * * * /opt/projects/mytube/retrobytes.py
@@ -49,11 +49,10 @@
 00 03 * * * /opt/projects/mytube/joe-rogan-experience.py
 24 08 * * * /opt/projects/mytube/joe-rogan-experience.py
 
-# Kill Tony (Tuesdays at 6am)
-00 06 * * 2 /opt/projects/mytube/kill-tony.py
-00 08 * * 2 /opt/projects/mytube/kill-tony.py
-
 # Doctor Mike
 15 06 * * * /opt/projects/mytube/doctor-mike.py
 15 08 * * * /opt/projects/mytube/doctor-mike.py
 
+# Explore with us
+30 06 * * * /opt/projects/mytube/explore-with-us.py
+30 08 * * * /opt/projects/mytube/explore-with-us.py
