@@ -87,7 +87,6 @@ def main():
         TITLE = str(yt.title).strip()
         PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
         HISTORY_PATH = str(pytubefix.helpers.target_directory('/opt/projects/mytube/history'))
-        OUTPUT_FILENAME = NewsFileName(SERIES_PREFIX, PUBLISH_DATE, TITLE, LOGGER)
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
         THUMBNAIL_URL = yt.thumbnail_url
         DESCRIPTION = f"{yt.description}\n\n\n\nVideo URL: {VIDEO}\nThumbnail URL: {THUMBNAIL_URL}"
@@ -107,22 +106,9 @@ def main():
             else:
                 continue
 
-        TEMP_OUTPUT = f"{TEMP_DIR}/{OUTPUT_FILENAME}"
-        FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
-
-        if os.path.exists(FINAL_OUTPUT):
-            LogIt(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!", "warn")
-            if (not(CheckHistory(HISTORY_LOG, VIDEO))):
-                WriteHistory(HISTORY_LOG, VIDEO)
-                # PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
-                continue
-            else:
-                # PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
-                continue
-
         # Only capture videos from a specific date range
         if not(yt.publish_date.year >= 2025):
-            LogIt(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
+            LogIt(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2025, and will be disgarded.")
             WriteHistory(HISTORY_LOG, VIDEO)
             continue
 
@@ -130,6 +116,20 @@ def main():
         if (not(CheckHistory(HISTORY_LOG, VIDEO))):
 
             LogIt(LOGGER, f"{index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) was NOT in history, and will be downloaded.")
+
+            OUTPUT_FILENAME = NewsFileName(SERIES_PREFIX, PUBLISH_DATE, TITLE, LOGGER)
+            TEMP_OUTPUT = f"{TEMP_DIR}/{OUTPUT_FILENAME}"
+            FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
+
+            if os.path.exists(FINAL_OUTPUT):
+                LogIt(LOGGER, f"\"{FINAL_OUTPUT}\" already exists!", "warn")
+                if (not(CheckHistory(HISTORY_LOG, VIDEO))):
+                    WriteHistory(HISTORY_LOG, VIDEO)
+                    # PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
+                    continue
+                else:
+                    # PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
+                    continue
 
             # Get all audio streams and list them by bitrate
             audio_streams = yt.streams.filter(adaptive=True, mime_type="audio/webm", only_audio=True).order_by('abr').desc()
