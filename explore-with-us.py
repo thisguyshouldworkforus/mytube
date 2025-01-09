@@ -120,7 +120,7 @@ def main():
         #         continue
 
         # Only interested in long-form interviews
-        if LENGTH < 28:
+        if LENGTH < 44:
             LogIt(LOGGER, f"Episode \"{TITLE}\" ({ID}) is too short ({LENGTH} minutes!)", "info")
             if (not(CheckHistory(HISTORY_LOG, VIDEO))):
                 WriteHistory(HISTORY_LOG, VIDEO)
