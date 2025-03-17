@@ -78,7 +78,7 @@ def main():
         # Log the action; adjust logging to reflect that we're working in reverse
         LogIt(LOGGER, f"Processing video {rev_index} of the last {len(videos_reversed)} items in reverse order")
     
-    # Note: No need to check for 'index == 11' now, as we're directly limiting the loop to at most 10 iterations
+    # Note: No need to check for 'index == 4' now, as we're directly limiting the loop to at most 10 iterations
 
         # Set the temporary directory
         TEMP_DIR = str(pytubefix.helpers.target_directory(f'/opt/projects/mytube/downloads/{LOGGER}'))
