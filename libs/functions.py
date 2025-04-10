@@ -182,7 +182,7 @@ def NewsFileName(SERIES_PREFIX: str = None, PUBLISH_DATE: str = None, EPISODE_TI
         DATE_SUFFIX = match.group(10) if match.group(10) is not None else "None"
     else:
         LogIt(LOGGER, f"Did not get a REGEX match. {EPISODE_TITLE}", "error")
-        sys.exit(1)
+        return False
 
     # Convert abbreviated month to full month name
     if MONTH in month_mapping:
