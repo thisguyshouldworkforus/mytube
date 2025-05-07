@@ -19,7 +19,7 @@ SECTION_ID = str('5')
 SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F48041&context=source%3Acontent.library~6~9')
 PLAYLIST = True
 CHANNEL = False
-INITIALIZE = False
+INITIALIZE = True
 ####[ REQUIRED VARIABLES ]####
 
 if not ProofOfLife:
@@ -117,7 +117,14 @@ def main():
 
             LogIt(LOGGER, f"{index} of {len(x.video_urls)}: \"{TITLE}\" ({ID}) was NOT in history, and will be downloaded.")
 
-            OUTPUT_FILENAME = NewsFileName(SERIES_PREFIX, PUBLISH_DATE, TITLE, LOGGER)
+            _tmp = NewsFileName(SERIES_PREFIX, PUBLISH_DATE, TITLE, LOGGER)
+            if _tmp is not False:
+                OUTPUT_FILENAME = _tmp
+            else:
+                LogIt(LOGGER, f"Did not get a REGEX match on {TITLE}", "error")
+                WriteHistory(HISTORY_LOG, VIDEO)
+                continue
+
             TEMP_OUTPUT = f"{TEMP_DIR}/{OUTPUT_FILENAME}"
             FINAL_OUTPUT = f"{OUTPUT_PATH}/{OUTPUT_FILENAME}"
 
