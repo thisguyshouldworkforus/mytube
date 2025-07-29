@@ -133,21 +133,18 @@ def main():
 
             # Download the audio stream, try 160kbps, if that fails, try 128kbps. If that fails, skip it.
             try:
-                input_audio = yt.streams.filter(adaptive=True, mime_type="audio/webm", abr="160kbps").first().download(f"{TEMP_DIR}",f"{PUBLISH_DATE}.audio.webm")
-            except AttributeError:
-                try:
-                    input_audio = yt.streams.filter(adaptive=True, mime_type="audio/webm", abr="128kbps").first().download(f"{TEMP_DIR}",f"{PUBLISH_DATE}.audio.webm")
-                except Exception:
-                    LogIt(LOGGER, f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})", "error")
-                    WriteHistory(HISTORY_LOG, VIDEO)
-                    continue
+                input_audio = yt.streams.get_default_audio_track().filter(abr="160kbps").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.audio")
+            except Exception as e:
+                LogIt(LOGGER, f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})", "error")
+                WriteHistory(HISTORY_LOG, VIDEO)
+                continue
 
             # Download the video stream, try 1080p, if that fails, try 720p. If that fails, skip it.
             try:
-                input_video = yt.streams.filter(adaptive=True, mime_type="video/webm",res="1080p").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.video.webm")
+                input_video = yt.streams.filter(adaptive=True, mime_type="video/webm",res="1080p").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.video")
             except AttributeError:
                 try:
-                    input_video = yt.streams.filter(adaptive=True, mime_type="video/webm",res="720p").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.video.webm")
+                    input_video = yt.streams.filter(adaptive=True, mime_type="video/webm",res="720p").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.video")
                 except Exception:
                     LogIt(LOGGER, f"There was an error downloading the video stream for \"{TITLE}\" ({ID})", "error")
                     if os.path.exists(input_audio):

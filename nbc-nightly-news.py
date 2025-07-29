@@ -139,47 +139,19 @@ def main():
                     continue
 
             # Get all audio streams and list them by bitrate
-            audio_streams = yt.streams.filter(adaptive=True, mime_type="audio/webm", only_audio=True).order_by('abr').desc()
-
-            # Try to download the highest available bitrate, then the second highest if the first fails
-            if len(audio_streams) == 0:
-                LogIt(LOGGER, f"No audio streams available for \"{TITLE}\" ({ID})", "error")
-                WriteHistory(HISTORY_LOG, VIDEO)
-                continue
-
-            success = False
-
-            # Attempt to download the highest bitrate first
             try:
-                LogIt(LOGGER, f"Attempting to download audio at highest bitrate ({audio_streams[0].abr})", "info")
-                input_audio = audio_streams[0].download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.audio.webm")
-                success = True
-                LogIt(LOGGER, f"Successfully downloaded audio at highest bitrate ({audio_streams[0].abr})", "info")
+                input_audio = yt.streams.get_default_audio_track().filter(abr="160kbps").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.audio")
             except Exception as e:
-                LogIt(LOGGER, f"Failed to download audio at highest bitrate ({audio_streams[0].abr}): {e}", "warning")
-
-            # If the highest bitrate download failed, try the second highest
-            if not success and len(audio_streams) > 1:
-                try:
-                    LogIt(LOGGER, f"Attempting to download audio at second highest bitrate ({audio_streams[1].abr})", "info")
-                    input_audio = audio_streams[1].download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.audio.webm")
-                    success = True
-                    LogIt(LOGGER, f"Successfully downloaded audio at second highest bitrate ({audio_streams[1].abr})", "info")
-                except Exception as e:
-                    LogIt(LOGGER, f"Failed to download audio at second highest bitrate ({audio_streams[1].abr}): {e}", "warning")
-
-            # If both downloads failed, log an error and move on
-            if not success:
                 LogIt(LOGGER, f"There was an error downloading the audio stream for \"{TITLE}\" ({ID})", "error")
                 WriteHistory(HISTORY_LOG, VIDEO)
                 continue
 
             # Download the video stream, try 1080p, if that fails, try 720p. If that fails, skip it.
             try:
-                input_video = yt.streams.filter(adaptive=True, mime_type="video/webm",res="1080p").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.video.webm")
+                input_video = yt.streams.filter(adaptive=True, mime_type="video/webm",res="1080p").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.video")
             except AttributeError:
                 try:
-                    input_video = yt.streams.filter(adaptive=True, mime_type="video/webm",res="720p").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.video.webm")
+                    input_video = yt.streams.filter(adaptive=True, mime_type="video/webm",res="720p").first().download(f"{TEMP_DIR}", f"{PUBLISH_DATE}.video")
                 except Exception:
                     LogIt(LOGGER, f"There was an error downloading the video stream for \"{TITLE}\" ({ID})", "error")
                     if os.path.exists(input_audio):
