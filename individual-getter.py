@@ -12,9 +12,9 @@ from libs.functions import ProofOfLife, CheckHistory, CheckProcess, FileName, Lo
 
 ####[ REQUIRED VARIABLES ]####
 LOGGER = str('nbcnews')
-OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.shows/NBC Nightly News with Lester Holt (2013) {tvdb-139911}'))
+OUTPUT_PATH = str(pytubefix.helpers.target_directory('/opt/media/tv.shows/NBC Nightly News with Lester Holt (2013) {tvdb-139911}/SPECIAL_REPORTS'))
 SERIES_PREFIX = str("NBC Nightly News with Lester Holt (2013) - ")
-VIDEOS = ['https://www.youtube.com/watch?v=rNPAV6oNtgg']
+VIDEOS = ['https://www.youtube.com/watch?v=SbZv5JwnUNA']
 SECTION_ID = str('5')
 SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F48041&context=source%3Acontent.library~6~9')
 # PLAYLIST = False
@@ -61,10 +61,10 @@ def main():
 
         # Set the video ID, title, and publish date
         ID = str(yt.video_id)
-        TITLE = str("Biden Drops Out Of 2024 Presidential Race").strip()
+        TITLE = str("Special Report: Trump and Putin hold joint press conference after meeting").strip()
         PUBLISH_DATE = (yt.publish_date).strftime("%Y-%m-%d")
         HISTORY_PATH = str(pytubefix.helpers.target_directory('/opt/projects/mytube/history'))
-        OUTPUT_FILENAME = "NBC Nightly News with Lester Holt (2013) - S00E01 - SPECIAL_Biden Drops Out Of 2024 Presidential Race (2024-07-24).mkv"
+        OUTPUT_FILENAME = "NBC Nightly News with Lester Holt (2013) - S00E02 - Trump and Putin hold joint press conference after meeting (2025-08-15).mkv"
         HISTORY_LOG = str(f"{HISTORY_PATH}/{LOGGER}_history.txt")
         THUMBNAIL_URL = yt.thumbnail_url
         DESCRIPTION = f"{yt.description}\n\n\n\nVideo URL: {VIDEO}\nThumbnail URL: {THUMBNAIL_URL}"
