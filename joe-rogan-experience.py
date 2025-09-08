@@ -9,6 +9,7 @@ import subprocess
 import sys
 import pytubefix
 import pytubefix.helpers
+import datetime
 from libs.functions import ProofOfLife, CheckHistory, CheckProcess, JREFileName, LogIt, NotifyMe, WriteHistory, PlexLibraryUpdate
 
 ####[ REQUIRED VARIABLES ]####
