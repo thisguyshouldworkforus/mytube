@@ -20,7 +20,7 @@ SECTION_ID = str('6')
 SERIES_URL = str('http://plex.int.snyderfamily.co:32400/web/index.html#!/server/50d6b668401e93d23054d59158dfff33bc988de4/details?key=%2Flibrary%2Fmetadata%2F48985&context=source%3Acontent.library~0~0')
 PLAYLIST = False
 CHANNEL = True
-INITIALIZE = False
+INITIALIZE = True
 ####[ REQUIRED VARIABLES ]####
 
 if not ProofOfLife:
@@ -112,11 +112,11 @@ def main():
                 PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
                 continue
 
-        # # Only capture videos from a specific date range
-        # if not(yt.publish_date.year >= 2024):
-        #    LogIt(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
-        #    WriteHistory(HISTORY_LOG, VIDEO)
-        #    continue
+        ## Only capture videos from a specific date range
+        if not (yt.publish_date.year >= datetime.datetime.now().year):
+            LogIt(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before {datetime.datetime.now().year}, and will be discarded.")
+            WriteHistory(HISTORY_LOG, VIDEO)
+            continue
 
         pattern = r'(Reacts To|Compilation)'
         if re.search(pattern, TITLE, re.IGNORECASE):

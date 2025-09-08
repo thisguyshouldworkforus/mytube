@@ -117,11 +117,12 @@ def main():
             if (not(CheckHistory(HISTORY_LOG, VIDEO))):
                 WriteHistory(HISTORY_LOG, VIDEO)
                 continue
+
         ## Only capture videos from a specific date range
-        #if not(yt.publish_date.year >= 2024):
-        #    LogIt(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
-        #    WriteHistory(HISTORY_LOG, VIDEO)
-        #    continue
+        if not (yt.publish_date.year >= datetime.datetime.now().year):
+            LogIt(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before {datetime.datetime.now().year}, and will be discarded.")
+            WriteHistory(HISTORY_LOG, VIDEO)
+            continue
 
         # Video is NOT in the history file
         if (not(CheckHistory(HISTORY_LOG, VIDEO))):

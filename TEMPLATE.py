@@ -8,6 +8,7 @@ import subprocess
 import sys
 import pytubefix
 import pytubefix.helpers
+import datetime
 from libs.functions import ProofOfLife, CheckHistory, CheckProcess, FileName, LogIt, NotifyMe, WriteHistory, PlexLibraryUpdate
 
 ####[ REQUIRED VARIABLES ]####
@@ -19,7 +20,7 @@ SECTION_ID = str('')
 SERIES_URL = str('')
 PLAYLIST = False
 CHANNEL = False
-INITIALIZE = False
+INITIALIZE = True
 ####[ REQUIRED VARIABLES ]####
 
 if not ProofOfLife:
@@ -110,11 +111,11 @@ def main():
                 PlexLibraryUpdate(SECTION_ID, SERIES_URL, FINAL_OUTPUT, THUMBNAIL_URL, LOGGER, DESCRIPTION)
                 continue
 
-        ## Only capture videos from a specific date range
-        #if not(yt.publish_date.year >= 2024):
-        #    LogIt(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before 2024, and will be disgarded.")
-        #    WriteHistory(HISTORY_LOG, VIDEO)
-        #    continue
+        # Only capture videos from a specific date range
+        if not (yt.publish_date.year >= datetime.datetime.now().year):
+            LogIt(LOGGER, f"{index} of {len(x.video_urls)}: '{yt.title}' ({yt.video_id}) was published before {datetime.datetime.now().year}, and will be discarded.")
+            WriteHistory(HISTORY_LOG, VIDEO)
+            continue
 
         # Video is NOT in the history file
         if (not(CheckHistory(HISTORY_LOG, VIDEO))):
