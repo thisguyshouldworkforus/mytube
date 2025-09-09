@@ -20,7 +20,7 @@ SECTION_ID = str('')
 SERIES_URL = str('')
 PLAYLIST = False
 CHANNEL = False
-INITIALIZE = True
+INITIALIZE = False
 ####[ REQUIRED VARIABLES ]####
 
 if not ProofOfLife:
